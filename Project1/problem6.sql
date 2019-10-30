@@ -1,4 +1,4 @@
-﻿select Data.score, Data.name, Data.ID, Data.Major, Data.CNAME
+﻿select rpad(substr(Data.name,1,1),char_length(Data.name),'*'), Data.ID, Data.Major, Data.CNAME
 from
 (select maximum as score, A."NAME" as name, A."MAJOR_ID" as Major, B."STUDENT_ID" as ID, B."COLLEGE_NAME" as CNAME
 from
