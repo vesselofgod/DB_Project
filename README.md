@@ -1,4 +1,9 @@
 # 2019 Yonsei Univ Database (CSI3105-02) Project
+## teammate
+> * [vesselofgod](https://github.com/vesselofgod)
+> * [tojslee](https://github.com/tojslee)
+> * 전영주
+
 * ## project1
   * DB EDR
   * <img width="500" alt="tables" src="https://user-images.githubusercontent.com/18081105/67873221-763e0700-fb76-11e9-9d67-148be7a407d0.png">
