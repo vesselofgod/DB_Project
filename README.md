@@ -17,4 +17,4 @@
   #### 자세한 사항은 project1.pptx를 참고하세요
 
 * ## project2
-  * Due date : 10.31
+  * Due date : 11.26
