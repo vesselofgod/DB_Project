@@ -124,8 +124,10 @@ public class project2_main {
 				char sure; // 진짜로 table을 삭제할 것인가에 대해 물어보는 질문의 답을 저장
 				System.out.print("Please specify the table name : ");
 				table_name = sc.nextLine();
-				System.out.print("If you delete this table, it is not guaranteed to recover again. Are you sure you want to delete this table (Y:yes, N:no)? ");
-				sure = sc.nextLine().charAt(0);
+				do {
+					System.out.print("If you delete this table, it is not guaranteed to recover again. Are you sure you want to delete this table (Y:yes, N:no)? ");
+					sure = sc.nextLine().charAt(0);
+				} while(sure != 'Y' && sure != 'N');
 				if (sure == 'Y') {
 					//실제 삭제 진행
 					//연산
