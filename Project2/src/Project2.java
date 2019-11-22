@@ -18,6 +18,7 @@ public class Project2 {
 		try 
 		{
 		// Connection file read
+		// 주의사항. connection file안의 정보는 자기 컴퓨터에 있는 PW, DB_NAME등으로 바꿔서 돌릴 것
 			File file = new File("./connection.txt");
 			Scanner scan = new Scanner(file);
 			int counter=0;
