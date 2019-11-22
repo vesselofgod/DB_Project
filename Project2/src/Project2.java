@@ -12,6 +12,55 @@ public class Project2 {
 // scanner사용시 주의할 점! : nextInt같은 경우는 개행문자를 입력받지 않기 때문에 뒤에 nextLine을 쓰면 개행문자를 받아버려서 입력이 있는 것으로 처리됨 ( nextLine으로 받은 변수들은
 // enter가 뒤에 들어있는 것을 알고 parsing이 필요함 )
 	public static void main(String args[]) throws ClassNotFoundException, SQLException {
+		
+		try 
+		{
+		// Connection file read
+		File file = new File("./connection.txt");
+		Scanner scan = new Scanner(file);
+		int counter=0;
+		while(scan.hasNextLine())
+		{
+
+		String word= scan.nextLine();
+		parse[counter] = word.split(":")[1];
+		counter+=1;
+		}
+		}
+		catch (FileNotFoundException e) 
+		{
+		System.out.println("File Not exist");
+		}
+
+		//Name of parameter of connecting
+		String IP = parse[0];
+		String DB_NAME = parse[1];
+		String SCHEMA_NAME = parse[2];
+		String ID = parse[3];
+		String PW = parse[4];
+
+		String DB_DRIVER = "org.postgresql.Driver";
+		String DB_CONNECTION_URL = "jdbc:postgresql://"+IP+"/"+DB_NAME;
+		String DB_USER = ID;
+		String DB_PASSWORD = PW;
+
+		Class.forName(DB_DRIVER);
+		Properties props = new Properties();
+
+		/* Setting Connection Info */
+		props.setProperty("user", DB_USER);
+		props.setProperty("password", DB_PASSWORD);
+		props.setProperty("characterEncoding", "UTF-8");
+		props.setProperty("serverTimezone", "Asia/Seoul");
+
+		/* Connect! */
+		Connection conn = DriverManager.getConnection(DB_CONNECTION_URL, props);
+
+		/* Create SQL statement object */
+		Statement st = conn.createStatement();
+		
+		
+		
 		int instruction; //instruction input받는 숫자
 		while(true) {
 			Scanner sc = new Scanner(System.in);
@@ -150,5 +199,6 @@ public class Project2 {
 				break;
 			}
 		}
-	  }
+		st.close();
+	}
 }
