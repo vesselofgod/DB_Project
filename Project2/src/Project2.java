@@ -5,7 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.ResultSetMetaData;
-import java.util.*
+import java.util.*;
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
