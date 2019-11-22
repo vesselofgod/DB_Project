@@ -26,10 +26,12 @@ public class project2_main {
 			System.out.println("Table is newly created as describled in the file");
 			System.out.print("Please specify the CSV filename : ");
 			CSV_file = sc.nextLine();
+			// 실제 처리
 			// 오류없이 돌아간 경우
 			System.out.println("Data import completed. (Insertion Success : ");
 			// 오류가 난 경우
 			// failure 개수만큼 loop돌려서 출력해주기
+			System.out.println();
 			break;
 		case 2: // Export to CSV
 			System.out.println("[Export to CSV]");
@@ -37,6 +39,9 @@ public class project2_main {
 			table_name = sc.nextLine();
 			System.out.print("Please specify the CSV filename : ");
 			CSV_file = sc.nextLine();
+			// 실제 처리
+			System.out.println("Data export completed.");
+			System.out.println();
 			break;
 		case 3: // Manipulate Data
 			System.out.println(3);
