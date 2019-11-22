@@ -2,7 +2,7 @@
 ## teammate
 > * [vesselofgod](https://github.com/vesselofgod)
 > * [tojslee](https://github.com/tojslee)
-> * 전영주
+> * [Lylalove](https://github.com/Lylalove)
 
 * ## poject1
   * Due date : 10.31
