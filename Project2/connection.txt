@@ -1,0 +1,5 @@
+IP : 127.0.0.1
+DB_NAME : postgres
+SCHEMA_NAME : public
+ID : user
+PW : 1234
