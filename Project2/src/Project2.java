@@ -34,17 +34,15 @@ public class Project2 {
 		}
 
 		//Name of parameter of connecting
-		String IP = parse[0];
-		String DB_NAME = parse[1];
-		String SCHEMA_NAME = parse[2];
-		String ID = parse[3];
-		String PW = parse[4];
-
+		String IP = parse[0].trim();
+		String DB_NAME = parse[1].trim();
+		String SCHEMA_NAME = parse[2].trim();
+		String ID = parse[3].trim();
+		String PW = parse[4].trim();
 		String DB_DRIVER = "org.postgresql.Driver";
 		String DB_CONNECTION_URL = "jdbc:postgresql://"+IP+"/"+DB_NAME;
 		String DB_USER = ID;
 		String DB_PASSWORD = PW;
-
 		Class.forName(DB_DRIVER);
 		Properties props = new Properties();
 
