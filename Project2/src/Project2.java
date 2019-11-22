@@ -4,10 +4,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
-import java.util.Scanner;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.sql.ResultSetMetaData;
+import java.util.*
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 public class Project2 {
@@ -93,7 +95,33 @@ public class Project2 {
 				System.out.print("Please specify the CSV filename : ");
 				CSV_file = sc.nextLine();
 				// 실제처리
-				System.out.println("Data export completed.");
+				ResultSet rs2 = st.executeQuery("SELECT * FROM " + table_name);
+				ResultSetMetaData rs2_meta = rs2.getMetaData();
+				
+				try {
+					BufferedWriter wr = Files.newBufferedWriter(Paths.get(CSV_file), Charset.forName("UTF-8"));
+					int columnNumber = rs2_meta.getColumnCount();
+					
+					for(int i = 0;i < columnNumber - 1;i++) {
+						wr.write(rs2_meta.getColumnName(i + 1) + ',');
+					}
+					wr.write(rs2_meta.getColumnName(columnNumber));
+					wr.newLine();
+					
+					while(rs2.next()) {
+						for(int i = 0; i < columnNumber - 1; i++) {
+							wr.write(rs2.getString(i + 1) + ',');
+						}
+						wr.write(rs2.getString(columnNumber));
+						wr.newLine();
+					}
+					
+					wr.close();
+					System.out.println("Data export completed.");
+				}
+				catch (Exception e) {
+					System.out.println(e);
+				}
 				System.out.println();
 				break;
 			case 3: // Manipulate Data
