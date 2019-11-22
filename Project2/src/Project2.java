@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Scanner;
 
-public class project2_main {
+public class Project2 {
 // scanner사용시 주의할 점! : nextInt같은 경우는 개행문자를 입력받지 않기 때문에 뒤에 nextLine을 쓰면 개행문자를 받아버려서 입력이 있는 것으로 처리됨 ( nextLine으로 받은 변수들은
 // enter가 뒤에 들어있는 것을 알고 parsing이 필요함 )
   public static void main(String args[]) throws ClassNotFoundException, SQLException {
@@ -144,7 +144,6 @@ public class project2_main {
 			}
 			break;
 		case 4: // Exit
-			System.out.println(4);
 			return;
 		default:
 			System.out.println();
