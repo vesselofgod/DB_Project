@@ -8,7 +8,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.Scanner;
 
-public class project2_main {
+public class project2 {
   public static void main(String args[]) throws ClassNotFoundException, SQLException {
 	int instruction;
 	while(true) {
