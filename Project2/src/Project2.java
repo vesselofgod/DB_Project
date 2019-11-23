@@ -15,6 +15,8 @@ import java.nio.file.Paths;
 public class Project2 {
 // scanner사용시 주의할 점! : nextInt같은 경우는 개행문자를 입력받지 않기 때문에 뒤에 nextLine을 쓰면 개행문자를 받아버려서 입력이 있는 것으로 처리됨 ( nextLine으로 받은 변수들은
 // enter가 뒤에 들어있는 것을 알고 parsing이 필요함 )
+	
+	
 	public static void main(String args[]) throws ClassNotFoundException, SQLException {
 		String[] parse = new String[5];
 		try 
@@ -151,19 +153,112 @@ public class Project2 {
 						System.out.println();
 						break;
 					case 3: // Select
+						String select_query = "SELECT ";
 						String order_column; // ordering이 필요한 column
+						boolean condcheck=true; //condition boolean flag
+						boolean existWhere=false; //where절이 필요한지 check함.
+						String conditions=""; //where절의 문장.
+						
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
 						System.out.print("Please specify columns which you want to retrieve (All : *): ");
 						select = sc.nextLine();
-						System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
-						condition_column = sc.nextLine();
+						
+						//선택할 테이블 쿼리 생성 SELECT,FROM part
+						String[] tableList = table_name.split(",");	
+						for(int i=0;i<tableList.length;i++) { tableList[i] = tableList[i].trim(); }
+						String[] select_column = select.split(","); //insert할 column name을 가지고 있는 array						
+						for(int i=0;i<select_column.length;i++) { select_column[i] = select_column[i].trim();}
+						for(int i=0;i<select_column.length-1;i++) { select_query=select_query+select_column[i] + ", "; }		
+						select_query = select_query + select_column[select_column.length-1] + " FROM ";
+						for(int i=0;i<tableList.length - 1;i++) { select_query = select_query + tableList[i] + ", "; }
+						select_query =select_query + tableList[tableList.length-1];
+						//condition 부분은 따로 처리할 것.
+						
+						while(condcheck)
+						{	
+							
+							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
+							condition_column = sc.nextLine().trim();
+							if ( condition_column.isEmpty()) break;
+							else
+							{
+								existWhere=true;
+								int compareOp;
+								String Operator="";
+								
+								while(true)
+								{	//잘못된 숫자 들어오면 다시
+									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+									String compareOps = sc.nextLine();
+									compareOp=Integer.parseInt(compareOps);
+									if (compareOp<8 && compareOp>0)
+									{
+										if (compareOp==1) Operator="=";
+										else if (compareOp==2) Operator=">";
+										else if (compareOp==3) Operator="<";
+										else if (compareOp==4) Operator=">=";
+										else if (compareOp==5) Operator="<=";
+										else if (compareOp==6) Operator="!=";
+										else if (compareOp==7) Operator="LIKE";
+										break;
+									}
+								}
+								
+								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+								//도대체 왜 input을 안받고 지나가는거지...
+								String compareValue = sc.nextLine();
+								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+								
+								String boolOp="";
+								int selectboolOp;
+								while(true)
+								{
+									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+									String selectboolOps=sc.nextLine();
+									selectboolOp=Integer.parseInt(selectboolOps);
+									if(selectboolOp ==1){
+										boolOp = "AND ";
+										break;
+									}
+									else if(selectboolOp ==2){
+										boolOp = "OR ";
+										break;
+									}
+									else if (selectboolOp ==3) {
+										condcheck=false;
+										break;
+									}
+								}
+								conditions=conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							}
+						}
+						
+						if (existWhere) conditions  =" WHERE "+conditions;
+						select_query+=conditions;
+						
 						System.out.print("Please specify the column name for ordering (Press enter : skip) : ");
 						order_column = sc.nextLine();
-						System.out.print("Please specify the sorting criteria (Press enter : skip); : ");
+						if ( !(order_column.trim().isEmpty()))
+						{
+							select_query += " ORDER BY ";
+							String[] orderAttributes = order_column.split(",");
+							for(int i=0;i<orderAttributes.length - 1;i++) { select_query = select_query + orderAttributes[i] + ", "; }
+							select_query =select_query + orderAttributes[orderAttributes.length-1] + " ";
+							System.out.print("Please specify the sorting criteria (Press enter : skip); : ");
+							String orderCondition = sc.nextLine();
+							if ( !(order_column.trim().isEmpty()))
+							{
+								String[] orderList = orderCondition.split(",");
+								for(int i=0;i<orderList.length - 1;i++) { select_query = select_query + orderList[i] + ", "; }
+								select_query =select_query + orderList[orderList.length-1];
+							}
+						}
+						select_query+=";";
 						// 연산 수행 후 가져오는 column에 따라서 출력되는 format이 달라지게 됨
 						// 연산 수행
 						System.out.println();
+						System.out.println(select_query);
 						break;
 					case 4: // Insert
 						String values;
