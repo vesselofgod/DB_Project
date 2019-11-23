@@ -264,8 +264,15 @@ public class Project2 {
 						} while(sure != 'Y' && sure != 'N');
 						if (sure == 'Y') {
 							//실제 삭제 진행
+							try {
+								String delete_query = "DROP TABLE " + table_name + ";";
+								st.executeUpdate(delete_query);
+								System.out.println("<The table " + table_name + " is deleted>");
+							}
+							catch(SQLException se) {
+								System.out.println("<ERROR>");
+							}
 							//연산
-							System.out.println("<The table " + table_name + " is deleted>");
 						}
 						else {
 							//삭제 안해
