@@ -173,6 +173,62 @@ public class Project2 {
 						select = sc.nextLine();
 						System.out.print("Please specify values for each column : ");
 						values = sc.nextLine();
+						
+						//parsing으로 sql 쿼리 만들기
+						String[] insert_column = select.split(","); //insert할 column name을 가지고 있는 array
+						String[] insert_value = values.split(","); //insert할 value들을 가지고 있는 array
+						
+						//parsing
+						for(int i=0;i<insert_column.length;i++) {
+							insert_column[i] = insert_column[i].trim();
+						}
+						for(int i=0;i<insert_value.length;i++) {
+							insert_value[i] = insert_value[i].trim();
+						}
+						
+						//query만들기
+						String insert_query = "INSERT INTO ";
+						insert_query = insert_query + table_name + "(";
+						for(int i=0;i<insert_column.length - 1;i++) {
+							insert_query = insert_query + insert_column[i] + ", ";
+						}
+						insert_query = insert_query + insert_column[insert_column.length - 1] + ") VALUES (";
+						
+						// integer면 그대로, string이면 ''를 붙여서 query만들기
+						for(int i=0;i<insert_value.length - 1;i++) {
+							try {
+							     Float.parseFloat(insert_value[i]);
+							     insert_query = insert_query + insert_value[i] + ", ";
+							}
+							catch (NumberFormatException ex) {
+							     insert_query = insert_query + "'" + insert_value[i] + "'" + ", ";
+							}
+						}
+						try {
+							Float.parseFloat(insert_value[insert_value.length - 1]);
+							insert_query = insert_query + insert_value[insert_value.length - 1] +  ");";
+						}
+						catch (NumberFormatException ex) {
+							insert_query = insert_query + "'" + insert_value[insert_value.length - 1] + "');";
+						}
+						
+						try {
+							int updated_columns = st.executeUpdate(insert_query);
+							
+							if(updated_columns ==0) {
+								System.out.println("<0 row inserted due to error>");
+							}
+							else if(updated_columns == 1) {
+								System.out.println("<1 row inserted>");
+							}
+							else {
+								System.out.println("<" + updated_columns + " rows inserted>");
+							}
+						}
+						catch (Exception e){
+							System.out.println("<0 row inserted due to error>");
+						}
+						
 						//연산 후 몇개의 row가 변경되었는지에 대한 정보가 나와야 하므로 전달되어야 함
 						//연산 실패시 error출력되어야 함
 						System.out.println();
