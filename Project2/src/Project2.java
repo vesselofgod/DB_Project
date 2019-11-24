@@ -157,6 +157,7 @@ public class Project2 {
 						String s_order_column; //select query의 ordering이 필요한 column
 						boolean s_condcheck=true; //condition boolean flag
 						boolean s_existWhere=false; //select문에서 where절이 필요한지 check함.
+						boolean s_skipCondition=true;
 						String s_conditions=""; //select문의 where절의 문장.
 						
 						System.out.print("Please specify the table name : ");
@@ -167,6 +168,7 @@ public class Project2 {
 						//선택할 테이블 쿼리 생성 SELECT,FROM part
 						String[] tableList = table_name.split(",");	
 						for(int i=0;i<tableList.length;i++) { tableList[i] = tableList[i].trim(); }
+						
 						String[] select_column = select.split(","); //select할 column name을 가지고 있는 array						
 						for(int i=0;i<select_column.length;i++) { select_column[i] = select_column[i].trim();}
 						for(int i=0;i<select_column.length-1;i++) { select_query=select_query+select_column[i] + ", "; }		
@@ -178,61 +180,72 @@ public class Project2 {
 						while(s_condcheck)
 						{	
 							String condition_column; // condition이 적용되는 column
-							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
-							condition_column = sc.nextLine().trim();
-							if ( condition_column.isEmpty()) break;//만약 그냥 enter칠 경우 where절 부분 생략
+							if(s_skipCondition)	
+							{ 
+								System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : "); 
+								condition_column = sc.nextLine().trim();
+								if ( condition_column.isEmpty()) break;//만약 그냥 enter칠 경우 where절 부분 생략
+							}
 							else
 							{
-								s_existWhere=true;//where절이 들어감을 표시함
-								int compareOp;
-								String Operator="";
-								
-								while(true)
-								{	//잘못된 숫자 들어오면 다시
-									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
-									String compareOps = sc.nextLine();
-									compareOp=Integer.parseInt(compareOps);
-									if (compareOp<8 && compareOp>0)
-									{
-										if (compareOp==1) Operator="=";
-										else if (compareOp==2) Operator=">";
-										else if (compareOp==3) Operator="<";
-										else if (compareOp==4) Operator=">=";
-										else if (compareOp==5) Operator="<=";
-										else if (compareOp==6) Operator="!=";
-										else if (compareOp==7) Operator="LIKE";
-										break;
-									}
-								}
-								
-								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
-								//도대체 왜 input을 안받고 지나가는거지...
-								String compareValue = sc.nextLine();
-								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
-								
-								String boolOp="";
-								int selectboolOp;
 								while(true)
 								{
-									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
-									String selectboolOps=sc.nextLine();
-									selectboolOp=Integer.parseInt(selectboolOps);
-									if(selectboolOp ==1){
-										boolOp = "AND ";
-										break;
-									}
-									else if(selectboolOp ==2){
-										boolOp = "OR ";
-										break;
-									}
-									else if (selectboolOp ==3) {
-										//이 경우에는 condition loop를 빠져나옴
-										s_condcheck=false;
-										break;
-									}
+									System.out.print("Please specify the column which you want to make condition : ");
+									condition_column = sc.nextLine().trim();
+									if ( !(condition_column.isEmpty())) break;//만약 그냥 enter칠 경우 where절 부분 생략
 								}
-								s_conditions=s_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 							}
+							s_existWhere=true;//where절이 들어감을 표시함
+							int compareOp;
+							String Operator="";
+							
+							while(true)
+							{	//잘못된 숫자 들어오면 다시
+								System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+								String compareOps = sc.nextLine();
+								compareOp=Integer.parseInt(compareOps);
+								if (compareOp<8 && compareOp>0)
+								{
+									if (compareOp==1) Operator="=";
+									else if (compareOp==2) Operator=">";
+									else if (compareOp==3) Operator="<";
+									else if (compareOp==4) Operator=">=";
+									else if (compareOp==5) Operator="<=";
+									else if (compareOp==6) Operator="!=";
+									else if (compareOp==7) Operator="LIKE";
+									break;
+								}
+							}
+							
+							System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+							//도대체 왜 input을 안받고 지나가는거지...
+							String compareValue = sc.nextLine();
+							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+							
+							String boolOp="";
+							int selectboolOp;
+							while(true)
+							{
+								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+								String selectboolOps=sc.nextLine();
+								selectboolOp=Integer.parseInt(selectboolOps);
+								if(selectboolOp ==1){
+									boolOp = "AND ";
+									s_skipCondition=false;
+									break;
+								}
+								else if(selectboolOp ==2){
+									boolOp = "OR ";
+									s_skipCondition=false;
+									break;
+								}
+								else if (selectboolOp ==3) {
+									//이 경우에는 condition loop를 빠져나옴
+									s_condcheck=false;
+									break;
+								}
+							}
+							s_conditions=s_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 						}
 						
 						if (s_existWhere) select_query = select_query+" WHERE "+s_conditions;
@@ -257,14 +270,13 @@ public class Project2 {
 							}
 						}
 						select_query+=";";
-
 						try 
 						{
 							ResultSet rset = st.executeQuery(select_query);//쿼리를 실행시킴, rset에 결과 tuple저장
 							ResultSetMetaData rsmd = rset.getMetaData();//메타데이터 객체 생성
 							int columnsNumber = rsmd.getColumnCount();
 							String getColumnNames="";
-							for(int i=1;i<columnsNumber-1;i++) {getColumnNames=getColumnNames+rsmd.getColumnName(i)+" | ";}
+							for(int i=1;i<columnsNumber;i++) {getColumnNames=getColumnNames+rsmd.getColumnName(i)+" | ";}
 							getColumnNames+=rsmd.getColumnName(columnsNumber);
 							System.out.println("=====================================================");
 							System.out.println(getColumnNames);
@@ -371,6 +383,7 @@ public class Project2 {
 						String delete_query = "DELETE FROM ";
 						boolean d_condcheck=true; //condition boolean flag
 						boolean d_existWhere=false; //delete문에 where절이 필요한지 check함.
+						boolean d_skipCondition=true;
 						String d_conditions=""; //where절의 문장.
 						
 						System.out.print("Please specify the table name : ");
@@ -385,59 +398,71 @@ public class Project2 {
 						while(d_condcheck)
 						{	
 							String condition_column; // condition이 적용되는 column
-							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
-							condition_column = sc.nextLine().trim();
-							if ( condition_column.isEmpty()) break;
+							if(d_skipCondition)	
+							{ 
+								System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : "); 
+								condition_column = sc.nextLine().trim();
+								if ( condition_column.isEmpty()) break;//만약 그냥 enter칠 경우 where절 부분 생략
+							}
 							else
 							{
-								d_existWhere=true;
-								int compareOp;
-								String Operator="";
-								
-								while(true)
-								{	//잘못된 숫자 들어오면 다시
-									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
-									String compareOps = sc.nextLine();
-									compareOp=Integer.parseInt(compareOps);
-									if (compareOp<8 && compareOp>0)
-									{
-										if (compareOp==1) Operator="=";
-										else if (compareOp==2) Operator=">";
-										else if (compareOp==3) Operator="<";
-										else if (compareOp==4) Operator=">=";
-										else if (compareOp==5) Operator="<=";
-										else if (compareOp==6) Operator="!=";
-										else if (compareOp==7) Operator="LIKE";
-										break;
-									}
-								}
-								
-								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
-								String compareValue = sc.nextLine();
-								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
-								
-								String boolOp="";
-								int selectboolOp;
 								while(true)
 								{
-									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
-									String selectboolOps=sc.nextLine();
-									selectboolOp=Integer.parseInt(selectboolOps);
-									if(selectboolOp ==1){
-										boolOp = "AND ";
-										break;
-									}
-									else if(selectboolOp ==2){
-										boolOp = "OR ";
-										break;
-									}
-									else if (selectboolOp ==3) {
-										d_condcheck=false;
-										break;
-									}
+									System.out.print("Please specify the column which you want to make condition : ");
+									condition_column = sc.nextLine().trim();
+									if ( !(condition_column.isEmpty())) break;//만약 그냥 enter칠 경우 where절 부분 생략
 								}
-								d_conditions=d_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 							}
+
+							d_existWhere=true;
+							int compareOp;
+							String Operator="";
+							
+							while(true)
+							{	//잘못된 숫자 들어오면 다시
+								System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+								String compareOps = sc.nextLine();
+								compareOp=Integer.parseInt(compareOps);
+								if (compareOp<8 && compareOp>0)
+								{
+									if (compareOp==1) Operator="=";
+									else if (compareOp==2) Operator=">";
+									else if (compareOp==3) Operator="<";
+									else if (compareOp==4) Operator=">=";
+									else if (compareOp==5) Operator="<=";
+									else if (compareOp==6) Operator="!=";
+									else if (compareOp==7) Operator="LIKE";
+									break;
+								}
+							}
+							
+							System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+							String compareValue = sc.nextLine();
+							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+							
+							String boolOp="";
+							int selectboolOp;
+							while(true)
+							{
+								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+								String selectboolOps=sc.nextLine();
+								selectboolOp=Integer.parseInt(selectboolOps);
+								if(selectboolOp ==1){
+									boolOp = "AND ";
+									d_skipCondition=false;
+									break;
+								}
+								else if(selectboolOp ==2){
+									boolOp = "OR ";
+									d_skipCondition=false;
+									break;
+								}
+								else if (selectboolOp ==3) {
+									d_condcheck=false;
+									break;
+								}
+							}
+							d_conditions=d_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 						}
 						
 						if (d_existWhere) 
@@ -467,6 +492,7 @@ public class Project2 {
 						String update_query = "UPDATE ";
 						boolean u_condcheck=true; //condition boolean flag
 						boolean u_existWhere=false; //update에 where절이 필요한지 check함.
+						boolean u_skipCondition = false;
 						String u_conditions=""; //where절의 문장.
 						
 						System.out.print("Please specify the table name : ");
@@ -482,61 +508,71 @@ public class Project2 {
 						while(u_condcheck)
 						{	
 							String condition_column; // condition이 적용되는 column
-							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
-							condition_column = sc.nextLine().trim();
-							if ( condition_column.isEmpty()) break;
+							if(u_skipCondition)	
+							{ 
+								System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : "); 
+								condition_column = sc.nextLine().trim();
+								if ( condition_column.isEmpty()) break;//만약 그냥 enter칠 경우 where절 부분 생략
+							}
 							else
 							{
-								u_existWhere=true;
-								int compareOp;
-								String Operator="";
-								
-								while(true)
-								{	//잘못된 숫자 들어오면 다시
-									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
-									String compareOps = sc.nextLine();
-									compareOp=Integer.parseInt(compareOps);
-									if (compareOp<8 && compareOp>0)
-									{
-										//사실 5.5같은 수가 들어오면 커버 못하지만 그렇게까지 나올까?
-										if (compareOp==1) Operator="=";
-										else if (compareOp==2) Operator=">";
-										else if (compareOp==3) Operator="<";
-										else if (compareOp==4) Operator=">=";
-										else if (compareOp==5) Operator="<=";
-										else if (compareOp==6) Operator="!=";
-										else if (compareOp==7) Operator="LIKE";
-										break;
-									}
-								}
-								
-								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
-								String compareValue = sc.nextLine();
-								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
-								
-								String boolOp="";
-								int selectboolOp;
 								while(true)
 								{
-									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
-									String selectboolOps=sc.nextLine();
-									selectboolOp=Integer.parseInt(selectboolOps);
-									if(selectboolOp ==1){
-										boolOp = "AND ";
-										break;
-									}
-									else if(selectboolOp ==2){
-										boolOp = "OR ";
-										break;
-									}
-									else if (selectboolOp ==3) {
-										u_condcheck=false;
-										break;
-									}
+									System.out.print("Please specify the column which you want to make condition : ");
+									condition_column = sc.nextLine().trim();
+									if ( !(condition_column.isEmpty())) break;//만약 그냥 enter칠 경우 where절 부분 생략
 								}
-								//조건문 생성
-								u_conditions=u_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 							}
+							u_existWhere=true;
+							int compareOp;
+							String Operator="";
+							
+							while(true)
+							{	//잘못된 숫자 들어오면 다시
+								System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+								String compareOps = sc.nextLine();
+								compareOp=Integer.parseInt(compareOps);
+								if (compareOp<8 && compareOp>0)
+								{
+									//사실 5.5같은 수가 들어오면 커버 못하지만 그렇게까지 나올까?
+									if (compareOp==1) Operator="=";
+									else if (compareOp==2) Operator=">";
+									else if (compareOp==3) Operator="<";
+									else if (compareOp==4) Operator=">=";
+									else if (compareOp==5) Operator="<=";
+									else if (compareOp==6) Operator="!=";
+									else if (compareOp==7) Operator="LIKE";
+									break;
+								}
+							}
+							
+							System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+							String compareValue = sc.nextLine();
+							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+							
+							String boolOp="";
+							int selectboolOp;
+							while(true)
+							{
+								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+								String selectboolOps=sc.nextLine();
+								selectboolOp=Integer.parseInt(selectboolOps);
+								if(selectboolOp ==1){
+									boolOp = "AND ";
+									break;
+								}
+								else if(selectboolOp ==2){
+									boolOp = "OR ";
+									break;
+								}
+								else if (selectboolOp ==3) {
+									u_condcheck=false;
+									break;
+								}
+							}
+							//조건문 생성
+							u_conditions=u_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							
 						}
 						update_query +=" SET ";
 
