@@ -268,18 +268,30 @@ public class Project2 {
 							System.out.println("=====================================================");
 							System.out.println(getColumnNames);
 							System.out.println("=====================================================");
+							int countRow=0;
 							while(rset.next())
 							{
-								for(int i=1; i<=columnsNumber ;i++)
+								
+								for(int i=1; i<columnsNumber+1 ;i++)
 								{
 									System.out.print(rset.getString(i)+" ");
 								}
+								countRow+=1;
+								if(countRow%10==0)
+								{
+									System.out.println();
+									System.out.println("<Press enter>");
+									String pressEnter=sc.nextLine();
+								}
 								System.out.println();
 							}
+							if(countRow>=1) { System.out.println(countRow+" rows selected"); }
+							else {System.out.println(countRow+" row selected");}
+							
 
 						}
 						catch (Exception e){
-							System.out.println("<error detected>"+e);
+							System.out.println("<error detected>");
 						}
 						
 						
