@@ -257,6 +257,32 @@ public class Project2 {
 						select_query+=";";
 						// 연산 수행 후 가져오는 column에 따라서 출력되는 format이 달라지게 됨
 						// 연산 수행
+						try 
+						{
+							ResultSet rset = st.executeQuery(select_query);
+							ResultSetMetaData rsmd = rset.getMetaData();
+							int columnsNumber = rsmd.getColumnCount();
+							String getColumnNames="";
+							for(int i=1;i<columnsNumber-1;i++) {getColumnNames=getColumnNames+rsmd.getColumnName(i)+" | ";}
+							getColumnNames+=rsmd.getColumnName(columnsNumber);
+							System.out.println("=====================================================");
+							System.out.println(getColumnNames);
+							System.out.println("=====================================================");
+							while(rset.next())
+							{
+								for(int i=0; i<columnsNumber ;i++)
+								{
+									System.out.print(rset.getString(i)+" ");
+								}
+								System.out.println();
+							}
+
+						}
+						catch (Exception e){
+							System.out.println("<error detected>"+e);
+						}
+						
+						
 						System.out.println();
 						System.out.println(select_query);
 						break;
@@ -383,7 +409,8 @@ public class Project2 {
 				System.out.println();
 				break;
 			case 4: // Exit
-				return;
+				 System.exit(0);
+				 break;
 			default:
 				System.out.println();
 				break;
