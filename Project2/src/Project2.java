@@ -270,7 +270,7 @@ public class Project2 {
 							System.out.println("=====================================================");
 							while(rset.next())
 							{
-								for(int i=0; i<columnsNumber ;i++)
+								for(int i=1; i<=columnsNumber ;i++)
 								{
 									System.out.print(rset.getString(i)+" ");
 								}
