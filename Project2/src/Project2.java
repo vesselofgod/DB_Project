@@ -134,7 +134,7 @@ public class Project2 {
 					man_instruction = sc.nextInt();
 					sc.nextLine();
 					String select; // select에 들어가는 string - parsing 필요
-					String condition_column; // condition이 적용되는 column
+					
 					switch (man_instruction) {
 					case 1: // Show tables
 						System.out.println("=======");
@@ -153,11 +153,11 @@ public class Project2 {
 						System.out.println();
 						break;
 					case 3: // Select
-						String select_query = "SELECT ";
-						String order_column; // ordering이 필요한 column
-						boolean condcheck=true; //condition boolean flag
-						boolean existWhere=false; //where절이 필요한지 check함.
-						String conditions=""; //where절의 문장.
+						String select_query = "SELECT "; 
+						String s_order_column; //select query의 ordering이 필요한 column
+						boolean s_condcheck=true; //condition boolean flag
+						boolean s_existWhere=false; //select문에서 where절이 필요한지 check함.
+						String s_conditions=""; //select문의 where절의 문장.
 						
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
@@ -167,7 +167,7 @@ public class Project2 {
 						//선택할 테이블 쿼리 생성 SELECT,FROM part
 						String[] tableList = table_name.split(",");	
 						for(int i=0;i<tableList.length;i++) { tableList[i] = tableList[i].trim(); }
-						String[] select_column = select.split(","); //insert할 column name을 가지고 있는 array						
+						String[] select_column = select.split(","); //select할 column name을 가지고 있는 array						
 						for(int i=0;i<select_column.length;i++) { select_column[i] = select_column[i].trim();}
 						for(int i=0;i<select_column.length-1;i++) { select_query=select_query+select_column[i] + ", "; }		
 						select_query = select_query + select_column[select_column.length-1] + " FROM ";
@@ -175,15 +175,15 @@ public class Project2 {
 						select_query =select_query + tableList[tableList.length-1];
 						//condition 부분은 따로 처리할 것.
 						
-						while(condcheck)
+						while(s_condcheck)
 						{	
-							
+							String condition_column; // condition이 적용되는 column
 							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
 							condition_column = sc.nextLine().trim();
-							if ( condition_column.isEmpty()) break;
+							if ( condition_column.isEmpty()) break;//만약 그냥 enter칠 경우 where절 부분 생략
 							else
 							{
-								existWhere=true;
+								s_existWhere=true;//where절이 들어감을 표시함
 								int compareOp;
 								String Operator="";
 								
@@ -226,28 +226,30 @@ public class Project2 {
 										break;
 									}
 									else if (selectboolOp ==3) {
-										condcheck=false;
+										//이 경우에는 condition loop를 빠져나옴
+										s_condcheck=false;
 										break;
 									}
 								}
-								conditions=conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+								s_conditions=s_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
 							}
 						}
 						
-						if (existWhere) conditions  =" WHERE "+conditions;
-						select_query+=conditions;
+						if (s_existWhere) select_query = select_query+" WHERE "+s_conditions;
 						
+						//order by part
 						System.out.print("Please specify the column name for ordering (Press enter : skip) : ");
-						order_column = sc.nextLine();
-						if ( !(order_column.trim().isEmpty()))
+						s_order_column = sc.nextLine();
+						if ( !(s_order_column.trim().isEmpty()))
 						{
 							select_query += " ORDER BY ";
-							String[] orderAttributes = order_column.split(",");
+							String[] orderAttributes = s_order_column.split(",");
 							for(int i=0;i<orderAttributes.length - 1;i++) { select_query = select_query + orderAttributes[i] + ", "; }
 							select_query =select_query + orderAttributes[orderAttributes.length-1] + " ";
 							System.out.print("Please specify the sorting criteria (Press enter : skip); : ");
-							String orderCondition = sc.nextLine();
-							if ( !(order_column.trim().isEmpty()))
+							
+							String orderCondition = sc.nextLine();//정렬 방향을 정해줌.
+							if ( !(s_order_column.trim().isEmpty()))
 							{
 								String[] orderList = orderCondition.split(",");
 								for(int i=0;i<orderList.length - 1;i++) { select_query = select_query + orderList[i] + ", "; }
@@ -255,12 +257,11 @@ public class Project2 {
 							}
 						}
 						select_query+=";";
-						// 연산 수행 후 가져오는 column에 따라서 출력되는 format이 달라지게 됨
-						// 연산 수행
+
 						try 
 						{
-							ResultSet rset = st.executeQuery(select_query);
-							ResultSetMetaData rsmd = rset.getMetaData();
+							ResultSet rset = st.executeQuery(select_query);//쿼리를 실행시킴, rset에 결과 tuple저장
+							ResultSetMetaData rsmd = rset.getMetaData();//메타데이터 객체 생성
 							int columnsNumber = rsmd.getColumnCount();
 							String getColumnNames="";
 							for(int i=1;i<columnsNumber-1;i++) {getColumnNames=getColumnNames+rsmd.getColumnName(i)+" | ";}
@@ -279,9 +280,10 @@ public class Project2 {
 								countRow+=1;
 								if(countRow%10==0)
 								{
+									//10줄씩 끊어서 출력하는 매커니즘
 									System.out.println();
 									System.out.println("<Press enter>");
-									String pressEnter=sc.nextLine();
+									String pressEnter=sc.nextLine();//별 의미 없이 엔터를 치기 전까지 끊어주는 용도.
 								}
 								System.out.println();
 							}
@@ -291,12 +293,11 @@ public class Project2 {
 
 						}
 						catch (Exception e){
-							System.out.println("<error detected>");
+							System.out.println("<error detected>"+e);
 						}
 						
 						
 						System.out.println();
-						System.out.println(select_query);
 						break;
 					case 4: // Insert
 						String values;
@@ -367,24 +368,215 @@ public class Project2 {
 						System.out.println();
 						break;
 					case 5: // Delete
-						String condition;
+						String delete_query = "DELETE FROM ";
+						boolean d_condcheck=true; //condition boolean flag
+						boolean d_existWhere=false; //delete문에 where절이 필요한지 check함.
+						String d_conditions=""; //where절의 문장.
+						
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
-						System.out.print("Please specify the column which you want to make condition (Press enter : skip) : ");
-						condition_column = sc.nextLine();
-						System.out.print("Please specify the condition (1: = 2: >, 3: <, 4: >=, 5: <= 6: !=, 7: LIKE)");
-						condition = sc.nextLine();
-						System.out.print("Please specify the condition value (" + condition_column + " = ?) : ");
-						// 이거 어떻게 할건지 이야기해봐야함 (전체 입력을 다 받고 나중에 query를 만들것인지 아니면 받는 순간에 query를 만들어놓고 변수를 재사용할 수 있게 할 건지)
+						
+						//삭제할 테이블 쿼리 생성 DELETE from 
+						String[] d_tableList = table_name.split(",");	
+						for(int i=0;i<d_tableList.length;i++) { d_tableList[i] = d_tableList[i].trim(); }
+						for(int i=0;i<d_tableList.length - 1;i++) { delete_query = delete_query + d_tableList[i] + ", "; }
+						delete_query =delete_query + d_tableList[d_tableList.length-1];
+						
+						while(d_condcheck)
+						{	
+							String condition_column; // condition이 적용되는 column
+							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
+							condition_column = sc.nextLine().trim();
+							if ( condition_column.isEmpty()) break;
+							else
+							{
+								d_existWhere=true;
+								int compareOp;
+								String Operator="";
+								
+								while(true)
+								{	//잘못된 숫자 들어오면 다시
+									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+									String compareOps = sc.nextLine();
+									compareOp=Integer.parseInt(compareOps);
+									if (compareOp<8 && compareOp>0)
+									{
+										if (compareOp==1) Operator="=";
+										else if (compareOp==2) Operator=">";
+										else if (compareOp==3) Operator="<";
+										else if (compareOp==4) Operator=">=";
+										else if (compareOp==5) Operator="<=";
+										else if (compareOp==6) Operator="!=";
+										else if (compareOp==7) Operator="LIKE";
+										break;
+									}
+								}
+								
+								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+								String compareValue = sc.nextLine();
+								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+								
+								String boolOp="";
+								int selectboolOp;
+								while(true)
+								{
+									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+									String selectboolOps=sc.nextLine();
+									selectboolOp=Integer.parseInt(selectboolOps);
+									if(selectboolOp ==1){
+										boolOp = "AND ";
+										break;
+									}
+									else if(selectboolOp ==2){
+										boolOp = "OR ";
+										break;
+									}
+									else if (selectboolOp ==3) {
+										d_condcheck=false;
+										break;
+									}
+								}
+								d_conditions=d_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							}
+						}
+						
+						if (d_existWhere) 
+						{
+							delete_query  = delete_query+" WHERE "+ d_conditions; 
+						}
+						delete_query+=";";
+						
+						//delete 쿼리 실행, 성공한 row의 갯수반환
+						try {
+							int deleted_columns = st.executeUpdate(delete_query);
+							
+							if(deleted_columns <= 1) {
+								System.out.println("<"+deleted_columns+" row deleted>");
+							}
+							else {
+								System.out.println("<" + deleted_columns + " rows deleted>");
+							}
+						}
+						catch (Exception e){
+							System.out.println("<error detected>");
+						}
+						
 						System.out.println();
 						break;
 					case 6: // Update
+						String update_query = "UPDATE ";
+						boolean u_condcheck=true; //condition boolean flag
+						boolean u_existWhere=false; //update에 where절이 필요한지 check함.
+						String u_conditions=""; //where절의 문장.
+						
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
-						System.out.print("Please specify the column which you want to make condition (Press enter : skip) : ");
-						condition_column = sc.nextLine();
-						System.out.print("Please specify the condition (1: =, 2: >, 3: <, 4: >=, 5: <=, 6: !=. 7: LIKE) : ");
-						condition = sc.nextLine();
+						
+						//업데이트할 테이블을 쿼리에 추가함 
+						String[] u_tableList = table_name.split(",");	
+						for(int i=0;i<u_tableList.length;i++) { u_tableList[i] = u_tableList[i].trim(); }
+						for(int i=0;i<u_tableList.length - 1;i++) { update_query = update_query + u_tableList[i] + ", "; }
+						update_query =update_query + u_tableList[u_tableList.length-1];
+						
+						//WHERE절, 조건확인
+						while(u_condcheck)
+						{	
+							String condition_column; // condition이 적용되는 column
+							System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
+							condition_column = sc.nextLine().trim();
+							if ( condition_column.isEmpty()) break;
+							else
+							{
+								u_existWhere=true;
+								int compareOp;
+								String Operator="";
+								
+								while(true)
+								{	//잘못된 숫자 들어오면 다시
+									System.out.print("Please specify the condition (1: = , 2: >, 3: <, 4: >=, 5: <=, 6: !=, 7: LIKE) : ");
+									String compareOps = sc.nextLine();
+									compareOp=Integer.parseInt(compareOps);
+									if (compareOp<8 && compareOp>0)
+									{
+										//사실 5.5같은 수가 들어오면 커버 못하지만 그렇게까지 나올까?
+										if (compareOp==1) Operator="=";
+										else if (compareOp==2) Operator=">";
+										else if (compareOp==3) Operator="<";
+										else if (compareOp==4) Operator=">=";
+										else if (compareOp==5) Operator="<=";
+										else if (compareOp==6) Operator="!=";
+										else if (compareOp==7) Operator="LIKE";
+										break;
+									}
+								}
+								
+								System.out.print("Please specify the condition value (" + condition_column + Operator + " ?) : ");
+								String compareValue = sc.nextLine();
+								if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
+								
+								String boolOp="";
+								int selectboolOp;
+								while(true)
+								{
+									System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
+									String selectboolOps=sc.nextLine();
+									selectboolOp=Integer.parseInt(selectboolOps);
+									if(selectboolOp ==1){
+										boolOp = "AND ";
+										break;
+									}
+									else if(selectboolOp ==2){
+										boolOp = "OR ";
+										break;
+									}
+									else if (selectboolOp ==3) {
+										u_condcheck=false;
+										break;
+									}
+								}
+								//조건문 생성
+								u_conditions=u_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							}
+						}
+						update_query +=" SET ";
+
+						//업데이트할 Attribute들을 입력함.
+						System.out.print("Please specify column names which you want to update : ");
+						String updateAttribute=sc.nextLine();
+						String[] updateAttributes = updateAttribute.split(",");
+						for(int i=0;i<updateAttributes.length;i++) { updateAttributes[i] = updateAttributes[i].trim(); }
+						
+						//업데이트할 값들을 입력함.
+						System.out.print("Please specify the value which you want to put : ");
+						String updateValue=sc.nextLine();
+						String[] updateValues = updateValue.split(",");
+						for(int i=0;i<updateValues.length;i++) { updateValues[i] = updateValues[i].trim(); }
+						
+						//update 쿼리 생성
+						for(int i=0;i<updateAttributes.length-1;i++) { update_query = update_query+ updateAttributes[i] +"="+ updateValues[i]+ " , "; }
+						update_query = update_query+ updateAttributes[updateAttributes.length-1] +"="+ updateValues[updateAttributes.length-1];
+						
+						if (u_existWhere) 
+						{
+							update_query  = update_query+" WHERE "+ u_conditions; 
+						}
+						
+						update_query+=";";
+						
+
+						try {
+							int update_columns = st.executeUpdate(update_query);
+							
+							if(update_columns <= 1) {
+								System.out.println("<"+update_columns+" row updated>");
+							}
+							else {
+								System.out.println("<" + update_columns + " rows updated>");
+							}
+						}
+						catch (Exception e){
+							System.out.println("<error detected>"+e);
+						}
 						System.out.println();
 						break;
 					case 7: // Drop table
@@ -398,8 +590,8 @@ public class Project2 {
 						if (sure == 'Y') {
 							//실제 삭제 진행
 							try {
-								String delete_query = "DROP TABLE " + table_name + ";";
-								st.executeUpdate(delete_query);
+								String drop_query = "DROP TABLE " + table_name + ";";
+								st.executeUpdate(drop_query);
 								System.out.println("<The table " + table_name + " is deleted>");
 							}
 							catch(SQLException se) {
