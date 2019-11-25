@@ -138,16 +138,34 @@ public class Project2 {
 						System.out.println("=======");
 						System.out.println("Table List");
 						System.out.println("=======");
+						ResultSet rset = st.executeQuery
+								("select table_name FROM information_schema.tables WHERE table_schema= '" + SCHEMA_NAME +"'");
+
+						while(rset.next()) {
+							System.out.println(rset.getString("table_name"));
+						}
+
 						//실제 연산에서 table의 이름들을 가져와서 출력함 (출력해야 할 table의 개수를 같이 리턴해주면 for문으로 돌리기)
 						System.out.println();
 						break;
 					case "2": // Describe table
 						System.out.print("Please specify the table name : ");
-						table_name = sc.nextLine();
+						table_name = sc.nextLine().trim();
+
 						System.out.println("==================================================================");
 						System.out.println("Column Name | Data Type | Character Maximum Length(or Numeric Precision and Scale)");
 						System.out.println("==================================================================");
 						//실제 연산에서 column name과 data type을 가져와서 출력 (출력해야 할 column 개수를 같이 리턴해주면 for문으로 돌리기)
+						ResultSet rset1 = st.executeQuery("select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale from information_schema.columns where table_name = '"+table_name+"'");
+						while (rset1.next()) {
+							if (rset1.getInt("character_maximum_length")== 0) {
+								System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type")+", " +"("+
+										rset1.getInt("numeric_precision")+","+rset1.getInt("numeric_scale")+")");
+							} else {
+								System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type")+", "+ rset1.getInt("character_maximum_length"));
+							}
+
+						}
 						System.out.println();
 						break;
 					case "3": // Select
