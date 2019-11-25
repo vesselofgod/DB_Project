@@ -1,0 +1,423 @@
+import java.sql.Connection;
+import java.sql.Date;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Time;
+import java.sql.Types;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.util.Properties;
+import java.util.Scanner;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.math. *;
+
+public class Project2 {
+// scanner사용시 주의할 점! : nextInt같은 경우는 개행문자를 입력받지 않기 때문에 뒤에 nextLine을 쓰면 개행문자를 받아버려서 입력이 있는 것으로 처리됨 ( nextLine으로 받은 변수들은
+// enter가 뒤에 들어있는 것을 알고 parsing이 필요함 )
+	public static void main(String args[]) throws ClassNotFoundException, SQLException {
+		String[] parse = new String[5];
+		try 
+		{
+		// Connection file read
+		// 주의사항. connection file안의 정보는 자기 컴퓨터에 있는 PW, DB_NAME등으로 바꿔서 돌릴 것
+			File file = new File("./connection.txt");
+			Scanner scan = new Scanner(file);
+			int counter=0;
+			while(scan.hasNextLine())
+			{	
+				String word= scan.nextLine();
+				parse[counter] = word.split(":")[1];
+				counter+=1;
+			}
+		}
+		catch (FileNotFoundException e) 
+		{
+		System.out.println("File Not exist");
+		}
+
+		//Name of parameter of connecting
+		String IP = parse[0].trim();
+		String DB_NAME = parse[1].trim();
+		String SCHEMA_NAME = parse[2].trim();
+		String ID = parse[3].trim();
+		String PW = parse[4].trim();
+		String DB_DRIVER = "org.postgresql.Driver";
+		String DB_CONNECTION_URL = "jdbc:postgresql://"+IP+"/"+DB_NAME;
+		String DB_USER = ID;
+		String DB_PASSWORD = PW;
+		Class.forName(DB_DRIVER);
+		Properties props = new Properties();
+
+		/* Setting Connection Info */
+		props.setProperty("user", DB_USER);
+		props.setProperty("password", DB_PASSWORD);
+		props.setProperty("characterEncoding", "UTF-8");
+		props.setProperty("serverTimezone", "Asia/Seoul");
+
+		/* Connect! */
+		Connection conn = DriverManager.getConnection(DB_CONNECTION_URL, props);
+
+		/* Create SQL statement object */
+		
+		
+		
+		
+		int instruction; //instruction input받는 숫자
+		while(true) {
+			Statement st = conn.createStatement();
+			Scanner sc = new Scanner(System.in);
+			System.out.print("Please input the instruction number (1: Import from CSV, 2: Export to CSV, 3: Manipulate Data, 4: Exit) :");
+			instruction = sc.nextInt();
+			sc.nextLine();
+			String table_name = null; // 수정하거나 참조하는 table name
+			String file_name; // 참조하는 file name
+			String CSV_file; // 쓰거나 참조하는 CSV file name
+			int man_instruction; // 4번에서 사용하는 manipulate instruction
+			switch(instruction) {
+			case 1: // Import from CSV
+				System.out.println("[Import from CSV]");
+				System.out.print("Please specify the filename for table description) : ");
+				file_name = sc.nextLine();
+				
+				List<String> column_name = new ArrayList<String>();
+				List<String> column_type = new ArrayList<String>();
+				// file에서 table 정보 가져오기 
+				try {
+					File table_info_f = new File(file_name);
+					FileReader table_info_fr = new FileReader (table_info_f);
+					BufferedReader table_info= new BufferedReader(table_info_fr);
+					//table name 받기 
+					String table_namet = table_info.readLine();
+					String[] a = table_namet.split(":");
+					table_name =  a[1].trim()  ;
+					
+					//column info 받기 
+					String table_t = table_info.readLine();
+					String[] a1 = table_t.split(":");
+					while (a1[0].trim().charAt(0) !='P') {
+						column_name.add("\""+a1[1].trim()+"\"");   // column_name "    " 상태 
+						
+						table_t = table_info.readLine();
+						a1 = table_t.split(":");
+						column_type.add(a1[1].trim());
+						
+						table_t = table_info.readLine();
+						a1 = table_t.split(":");
+					}
+					
+					//PK 되는 것 받기 
+					String querypk = "";
+					//List<String> pk = new ArrayList<String> ();  // 여기에 PK의 이름 다 넣기 
+					String[] pks = a1[1].split(",");
+					for (int i=0; i<pks.length; i++) {
+						//pk.add("\""+pks[i].trim()+"\"");
+						querypk += "\""+pks[i].trim()+"\""+ ",";
+					}
+					querypk = querypk.substring(0, querypk.length()-1) ;
+					
+					//NOT NULL 받기 
+					List<Integer> nn = new ArrayList<Integer> ();  // 여기에 NOT NULL 인 column index 다 넣기 
+					table_t = table_info.readLine();
+					a1 = table_t.split(":");
+					String[] nns = a1[1].split(",");
+					for(int i=0; i<nns.length; i++) {
+						nn.add(column_name.indexOf("\""+nns[i].trim()+"\""));
+					}
+					
+					
+					//column type + not null 합치기 
+					for (int i=0; i<nn.size(); i++) {
+						String a3 = column_type.get(nn.get(i));
+						column_type.set(nn.get(i), a3+ " not null");
+					}
+					
+					//column name + column type 합치기 
+					String name_type = "";
+					for (int i=0; i< column_name.size(); i++) {
+						name_type +=  column_name.get(i)  + column_type.get(i) + ",";
+					}
+					
+					//SQL QUERY 실행 
+					st.execute("create table \"" +table_name+ "\"(" +name_type + 
+							"primary key (" +querypk+"));");
+					table_info.close();
+					table_info_fr.close();
+					System.out.println("Table is newly created as describled in the file");
+					
+				}catch (FileNotFoundException e1) {
+					System.out.println(e1);
+				}catch (IOException e2) {
+					System.out.println(e2);
+				}catch (org.postgresql.util.PSQLException e) {
+					System.out.println(e);
+					System.out.println("Table already exists.");
+				}
+				
+				
+				// CSV file에서 data 받아오는 과정 start
+				System.out.print("Please specify the CSV filename : ");
+				CSV_file = sc.nextLine();
+				// 실제 처리
+				
+				int succ_num = 0;   // 넣는 데에 성공한 tuple의 개수
+				int fail_num = 0;   // 넣는 데에 실패한 tuple의 개수 
+				List<Integer> fail_line_num = new ArrayList<Integer> () ;
+				List<String> fail_line_info = new ArrayList<String> ();
+				
+				try {
+					BufferedReader bf = 
+							new BufferedReader (new InputStreamReader (new FileInputStream(CSV_file), "UTF-8"));
+					String column_names = bf.readLine();
+					String[] column_namearr = column_names.split(",");
+					
+					if (column_namearr.length != column_name.size()) {
+						System.out.println
+						("Data inport failure. (The number of columns does not match between the table description and the CSV file.)\n");
+						continue;
+					}
+					String datacol = "";
+					
+					// column_namearr -> data type 4가지로 나누기 
+					List<Integer> col_data_type = new ArrayList<Integer> ();
+					//column_namearr의 column 대소문자 구별 및 양옆 공백 없애기 
+					for (int i=0 ; i<column_namearr.length; i++) {
+						column_namearr[i] =  "\""+ (column_namearr[i].trim()) +"\"";
+						datacol = datacol +column_namearr[i] + ",";
+						
+						int index = column_name.indexOf(column_namearr[i]);
+						
+						if (column_type.get(index).contains("Date")) {
+							col_data_type.add(2);
+							continue;
+						} else if (column_type.get(index).contains("Time")){
+							col_data_type.add(3);
+							continue;
+						} else if (column_type.get(index).contains("char")) {
+							col_data_type.add(1);
+							continue;
+						} else if (column_type.get(index).contains("int")){
+							col_data_type.add(0);
+							continue;
+						} else {// numeric value
+							col_data_type.add(4);
+							continue;
+						}
+							
+					}
+					
+					
+					// 0 :숫자 관련  1: string 관련 2: date 관련 3: time 관련 
+					// 이에 따라 query 만들기 
+					datacol = datacol.substring(0, datacol.length()-1);
+					//read csv file line by line 
+					// 읽을 때마다 집어 넣고 success fail check 
+					
+					int k = 1;
+					String data = bf.readLine();
+					k ++;
+					String question_marks = "(";
+					for (int i=0; i<column_namearr.length; i++) {
+						question_marks += "?,";
+					}
+					question_marks = question_marks.substring(0, question_marks.length() -1);
+					question_marks += ")";
+					while (data != null) {
+						String query = "insert into \"" + table_name + "\" (" + datacol + ")"+ "values "+question_marks;
+						PreparedStatement pstmt = conn.prepareStatement(query);
+						String[] dataarr = data.split(",");
+						for (int i=1; i<dataarr.length+1; i++) {
+							switch (col_data_type.get(i-1)) {
+								case 0:// numeric value 처리 
+									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
+									break;
+								case 1: 
+									pstmt.setString(i, "'"+dataarr[i-1]+"'");
+									break;
+								case 2: 
+									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
+									break;
+								case 3:
+									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
+									break;
+								case 4:  // numeric
+									System.out.println(dataarr[i-1]);
+									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
+									pstmt.setObject(i, fdata, Types.NUMERIC);
+									break;
+									//
+							}
+						}
+						
+						try {
+							pstmt.executeUpdate();
+							succ_num ++;
+						} catch (org.postgresql.util.PSQLException e) {
+							System.out.println(e);
+							fail_num ++;
+							fail_line_num.add(k);
+							fail_line_info.add(data);
+						}
+						
+						data = bf.readLine();
+						pstmt.close();
+						k++;
+					}
+					// 오류없이 돌아간 경우
+					System.out.println("Data import completed. (Insertion Success : " + succ_num+ ", Insertion Failure : " + fail_num+ ")");
+					// 오류가 난 경우
+					// failure 개수만큼 loop돌려서 출력해주기	
+					if (fail_num != 0) {
+						for (int i=0; i<fail_num; i++) {
+							System.out.println("Failed tuple : " + fail_line_num.get(i) + " line in CSV - " + fail_line_info.get(i));
+						}
+					}
+					bf.close();
+				} catch (FileNotFoundException e1) {
+					System.out.println(e1);
+				}catch (IOException e2) {
+					System.out.println(e2);
+				} 
+				
+				System.out.println();
+				break;
+			case 2: // Export to CSV
+				System.out.println("[Export to CSV]");
+				System.out.print("Please specify the table name : ");
+				table_name = sc.nextLine();
+				System.out.print("Please specify the CSV filename : ");
+				CSV_file = sc.nextLine();
+				// 실제처리
+				System.out.println("Data export completed.");
+				System.out.println();
+				break;
+				
+			case 3: // Manipulate Data
+				System.out.println("[Manipulate Data]");
+				System.out.print("Please input the instruction number (1: Show Tables, 2: Describe Table, 3: Select, "
+						+ "4: Insert, 5: Delete, 6: Update, 7: Drop Table, 8: Back to main) : ");
+				man_instruction = sc.nextInt();
+				sc.nextLine();
+				String select; // select에 들어가는 string - parsing 필요
+				String condition_column; // condition이 적용되는 column
+				switch (man_instruction) {
+				case 1: // Show tables
+					System.out.println("=======");
+					System.out.println("Table List");
+					System.out.println("=======");
+					ResultSet rset = st.executeQuery
+							("select table_name FROM information_schema.tables WHERE table_schema= '" + SCHEMA_NAME +"'");
+					
+					while(rset.next()) {
+						System.out.println(rset.getString("table_name"));
+					}
+					
+					//실제 연산에서 table의 이름들을 가져와서 출력함 (출력해야 할 table의 개수를 같이 리턴해주면 for문으로 돌리기)
+					System.out.println();
+					break;
+				case 2: // Describe table
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine().trim();
+					
+					System.out.println("==================================================================");
+					System.out.println("Column Name | Data Type | Character Maximum Length(or Numeric Precision and Scale)");
+					System.out.println("==================================================================");
+					//실제 연산에서 column name과 data type을 가져와서 출력 (출력해야 할 column 개수를 같이 리턴해주면 for문으로 돌리기)
+					ResultSet rset1 = st.executeQuery("select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale from information_schema.columns where table_name = '"+table_name+"'");
+					while (rset1.next()) {
+						if (rset1.getInt("character_maximum_length")== 0) {
+							System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type")+", " +"("+
+									rset1.getInt("numeric_precision")+","+rset1.getInt("numeric_scale")+")");
+						} else {
+							System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type")+", "+ rset1.getInt("character_maximum_length"));
+						}
+						
+					}
+					System.out.println();
+					break;
+				case 3: // Select
+					String order_column; // ordering이 필요한 column
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine();
+					System.out.print("Please specify columns which you want to retrieve (All : *): ");
+					select = sc.nextLine();
+					System.out.print("Please specify the column which you want to make condition (Proess enter : skip) : ");
+					condition_column = sc.nextLine();
+					System.out.print("Please specify the column name for ordering (Press enter : skip) : ");
+					order_column = sc.nextLine();
+					System.out.print("Please specify the sorting criteria (Press enter : skip); : ");
+					// 연산 수행 후 가져오는 column에 따라서 출력되는 format이 달라지게 됨
+					// 연산 수행
+					System.out.println();
+					break;
+				case 4: // Insert
+					String values;
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine();
+					System.out.print("Please specify all columns in order of which you want to insert : ");
+					select = sc.nextLine();
+					System.out.print("Please specify values for each column : ");
+					values = sc.nextLine();
+					//연산 후 몇개의 row가 변경되었는지에 대한 정보가 나와야 하므로 전달되어야 함
+					//연산 실패시 error출력되어야 함
+					System.out.println();
+					break;
+				case 5: // Delete
+					String condition;
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine();
+					System.out.print("Please specify the column which you want to make condition (Press enter : skip) : ");
+					condition_column = sc.nextLine();
+					System.out.print("Please specify the condition (1: = 2: >, 3: <, 4: >=, 5: <= 6: !=, 7: LIKE)");
+					condition = sc.nextLine();
+					System.out.print("Please specify the condition value (" + condition_column + " = ?) : ");
+					// 이거 어떻게 할건지 이야기해봐야함 (전체 입력을 다 받고 나중에 query를 만들것인지 아니면 받는 순간에 query를 만들어놓고 변수를 재사용할 수 있게 할 건지)
+					System.out.println();
+					break;
+				case 6: // Update
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine();
+					System.out.print("Please specify the column which you want to make condition (Press enter : skip) : ");
+					condition_column = sc.nextLine();
+					System.out.print("Please specify the condition (1: =, 2: >, 3: <, 4: >=, 5: <=, 6: !=. 7: LIKE) : ");
+					condition = sc.nextLine();
+					System.out.println();
+					break;
+				case 7: // Drop table
+					char sure; // 진짜로 table을 삭제할 것인가에 대해 물어보는 질문의 답을 저장
+					System.out.print("Please specify the table name : ");
+					table_name = sc.nextLine();
+					do {
+						System.out.print("If you delete this table, it is not guaranteed to recover again. Are you sure you want to delete this table (Y:yes, N:no)? ");
+						sure = sc.nextLine().charAt(0);
+					} while(sure != 'Y' && sure != 'N');
+					if (sure == 'Y') {
+						//실제 삭제 진행
+						//연산
+						System.out.println("<The table " + table_name + " is deleted>");
+					}
+					else {
+						//삭제 안해
+						System.out.println("<Deletion canceled>");
+					}
+					System.out.println();
+					break;
+				case 8: // Back to main
+					break;
+				}
+				break;
+			case 4: // Exit
+				return;
+			default:
+				System.out.println();
+				break;
+			}
+			st.close();
+		}
+	}
+}
