@@ -361,6 +361,10 @@ public class Project2 {
 						//실제 연산에서 column name과 data type을 가져와서 출력 (출력해야 할 column 개수를 같이 리턴해주면 for문으로 돌리기)
 						ResultSet rset1 = st.executeQuery("select column_name, data_type, character_maximum_length, numeric_precision, numeric_scale from information_schema.columns where table_name = '"+table_name+"'");
 						while (rset1.next()) {
+							if ((rset1.getInt("character_maximum_length")== 0) && (rset1.getInt("numeric_precision") ==0) && (rset1.getInt("numeric_scale")==0){
+								System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type"));
+								continue;
+							} 
 							if (rset1.getInt("character_maximum_length")== 0) {
 								System.out.println(rset1.getString("column_name")+", "+ rset1.getString("data_type")+", " +"("+
 										rset1.getInt("numeric_precision")+","+rset1.getInt("numeric_scale")+")");
