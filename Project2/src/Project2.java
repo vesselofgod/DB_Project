@@ -59,7 +59,7 @@ public class Project2 {
 
 		/* Connect! */
 		Connection conn = DriverManager.getConnection(DB_CONNECTION_URL, props);
-
+		conn.setAutoCommit(true);
 		/* Create SQL statement object */
 		Statement st = conn.createStatement();
 		
@@ -173,8 +173,8 @@ public class Project2 {
 						for(int i=0;i<select_column.length;i++) { select_column[i] = select_column[i].trim();}
 						for(int i=0;i<select_column.length-1;i++) { select_query=select_query+select_column[i] + ", "; }		
 						select_query = select_query + select_column[select_column.length-1] + " FROM ";
-						for(int i=0;i<tableList.length - 1;i++) { select_query = select_query + tableList[i] + ", "; }
-						select_query =select_query + tableList[tableList.length-1];
+						for(int i=0;i<tableList.length - 1;i++) { select_query = select_query + SCHEMA_NAME +"."+tableList[i] + ", "; }
+						select_query =select_query + SCHEMA_NAME+"."+tableList[tableList.length-1];
 						//condition 부분은 따로 처리할 것.
 						
 						while(s_condcheck)
@@ -334,7 +334,7 @@ public class Project2 {
 						
 						//query만들기
 						String insert_query = "INSERT INTO ";
-						insert_query = insert_query + table_name + "(";
+						insert_query = insert_query +SCHEMA_NAME+"." +table_name + "(";
 						for(int i=0;i<insert_column.length - 1;i++) {
 							insert_query = insert_query + insert_column[i] + ", ";
 						}
@@ -392,8 +392,8 @@ public class Project2 {
 						//삭제할 테이블 쿼리 생성 DELETE from 
 						String[] d_tableList = table_name.split(",");	
 						for(int i=0;i<d_tableList.length;i++) { d_tableList[i] = d_tableList[i].trim(); }
-						for(int i=0;i<d_tableList.length - 1;i++) { delete_query = delete_query + d_tableList[i] + ", "; }
-						delete_query =delete_query + d_tableList[d_tableList.length-1];
+						for(int i=0;i<d_tableList.length - 1;i++) { delete_query = delete_query +SCHEMA_NAME+"." +d_tableList[i] + ", "; }
+						delete_query =delete_query +SCHEMA_NAME + "." + d_tableList[d_tableList.length-1];
 						
 						while(d_condcheck)
 						{	
@@ -501,8 +501,8 @@ public class Project2 {
 						//업데이트할 테이블을 쿼리에 추가함 
 						String[] u_tableList = table_name.split(",");	
 						for(int i=0;i<u_tableList.length;i++) { u_tableList[i] = u_tableList[i].trim(); }
-						for(int i=0;i<u_tableList.length - 1;i++) { update_query = update_query + u_tableList[i] + ", "; }
-						update_query =update_query + u_tableList[u_tableList.length-1];
+						for(int i=0;i<u_tableList.length - 1;i++) { update_query = update_query +SCHEMA_NAME+"."+ u_tableList[i] + ", "; }
+						update_query =update_query + SCHEMA_NAME + "." +u_tableList[u_tableList.length-1];
 						
 						//WHERE절, 조건확인
 						while(u_condcheck)
@@ -626,7 +626,7 @@ public class Project2 {
 						if (sure == 'Y') {
 							//실제 삭제 진행
 							try {
-								String drop_query = "DROP TABLE " + table_name + ";";
+								String drop_query = "DROP TABLE " + SCHEMA_NAME+"."+table_name + ";";
 								st.executeUpdate(drop_query);
 								System.out.println("<The table " + table_name + " is deleted>");
 							}
