@@ -138,11 +138,11 @@ public class Project2 {
 						System.out.println("=======");
 						System.out.println("Table List");
 						System.out.println("=======");
-						ResultSet rset = st.executeQuery
+						ResultSet rset2 = st.executeQuery
 								("select table_name FROM information_schema.tables WHERE table_schema= '" + SCHEMA_NAME +"'");
 
-						while(rset.next()) {
-							System.out.println(rset.getString("table_name"));
+						while(rset2.next()) {
+							System.out.println(rset2.getString("table_name"));
 						}
 
 						//실제 연산에서 table의 이름들을 가져와서 출력함 (출력해야 할 table의 개수를 같이 리턴해주면 for문으로 돌리기)
