@@ -1,0 +1,9 @@
+Name : grade
+Column 1 : COURSE_ID
+Column 1 Data Type      :      integer
+   Column 2    :    GrAde 
+Column 2 Data Type : numeric(2,1)
+Column 3 : STUDENT_ID 
+Column 3   Data Type :       char   (20)
+PK : COURSE_ID, STUDENT_ID
+NOT NULL : COURSE_ID, GrAde, STUDENT_ID
