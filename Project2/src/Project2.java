@@ -169,10 +169,26 @@ public class Project2 {
 						
 						String[] select_column = select.split(","); //select할 column name을 가지고 있는 array						
 						for(int i=0;i<select_column.length;i++) { select_column[i] = select_column[i].trim();}
-						for(int i=0;i<select_column.length-1;i++) { select_query=select_query+select_column[i] + ", "; }		
-						select_query = select_query + select_column[select_column.length-1] + " FROM ";
-						for(int i=0;i<tableList.length - 1;i++) { select_query = select_query + SCHEMA_NAME +"."+tableList[i] + ", "; }
-						select_query =select_query + SCHEMA_NAME+"."+tableList[tableList.length-1];
+						
+						//select절 쿼리생성
+						for(int i=0;i<select_column.length-1;i++) 
+						{
+							if(!(select_column[i].equals("*")))
+							{
+								select_query=select_query+"\""+select_column[i]+"\"" + ", "; 
+							}
+							else {select_query=select_query+select_column[i]+ ", "; }
+						}
+						
+						if(!(select_column[select_column.length-1].equals("*")))
+						{
+							select_query = select_query +"\"" +select_column[select_column.length-1]+"\"" + " FROM ";
+						}
+						else {select_query = select_query +select_column[select_column.length-1] + " FROM ";}
+						
+						//from절 퀴리 생성
+						for(int i=0;i<tableList.length - 1;i++) { select_query = select_query + SCHEMA_NAME +"."+"\""+tableList[i] + "\"" + ", "; }
+						select_query =select_query + SCHEMA_NAME+"."+"\""+tableList[tableList.length-1]+"\"";
 						//condition 부분은 따로 처리할 것.
 						
 						while(s_condcheck)
@@ -243,7 +259,8 @@ public class Project2 {
 									break;
 								}
 							}
-							s_conditions=s_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+
+								s_conditions=s_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
 						}
 						
 						if (s_existWhere) select_query = select_query+" WHERE "+s_conditions;
@@ -255,16 +272,31 @@ public class Project2 {
 						{
 							select_query += " ORDER BY ";
 							String[] orderAttributes = s_order_column.split(",");
-							for(int i=0;i<orderAttributes.length - 1;i++) { select_query = select_query + orderAttributes[i] + ", "; }
-							select_query =select_query + orderAttributes[orderAttributes.length-1] + " ";
 							System.out.print("Please specify the sorting criteria (Press enter : skip); : ");
 							
 							String orderCondition = sc.nextLine();//정렬 방향을 정해줌.
 							if ( !(s_order_column.trim().isEmpty()))
 							{
 								String[] orderList = orderCondition.split(",");
-								for(int i=0;i<orderList.length - 1;i++) { select_query = select_query + orderList[i] + ", "; }
-								select_query =select_query + orderList[orderList.length-1];
+								for(int i=0;i<orderList.length - 1;i++) 
+								{ 	if(orderList[i].equals("DESCEND")) 
+									{
+										select_query = select_query +"\""+orderAttributes[i]+"\""+" DESC, ";
+									}
+									else
+									{
+										select_query = select_query +"\""+orderAttributes[i]+"\""+" ASC, ";
+									}
+								}
+								if(orderList[orderList.length-1].equals("DESCEND")) 
+								{
+									select_query =select_query+"\"" +orderAttributes[orderAttributes.length-1]+"\""+" DESC";
+								}
+								else
+								{
+									select_query = select_query +"\""+orderAttributes[orderAttributes.length-1]+"\""+" ASC";
+								}
+								
 							}
 						}
 						select_query+=";";
@@ -292,7 +324,7 @@ public class Project2 {
 								{
 									//10줄씩 끊어서 출력하는 매커니즘
 									System.out.println();
-									System.out.println("<Press enter>");
+									System.out.print("<Press enter>");
 									String pressEnter=sc.nextLine();//별 의미 없이 엔터를 치기 전까지 끊어주는 용도.
 								}
 								System.out.println();
@@ -303,10 +335,8 @@ public class Project2 {
 
 						}
 						catch (Exception e){
-							System.out.println("<error detected>"+e);
-						}
-						
-						
+							System.out.println("<error detected>");
+						}						
 						System.out.println();
 						break;
 					case "4": // Insert
@@ -390,8 +420,8 @@ public class Project2 {
 						//삭제할 테이블 쿼리 생성 DELETE from 
 						String[] d_tableList = table_name.split(",");	
 						for(int i=0;i<d_tableList.length;i++) { d_tableList[i] = d_tableList[i].trim(); }
-						for(int i=0;i<d_tableList.length - 1;i++) { delete_query = delete_query +SCHEMA_NAME+"." +d_tableList[i] + ", "; }
-						delete_query =delete_query +SCHEMA_NAME + "." + d_tableList[d_tableList.length-1];
+						for(int i=0;i<d_tableList.length - 1;i++) { delete_query = delete_query +SCHEMA_NAME+"." +"\""+d_tableList[i]+"\"" + ", "; }
+						delete_query =delete_query +SCHEMA_NAME + "." + "\""+d_tableList[d_tableList.length-1]+"\"";
 						
 						while(d_condcheck)
 						{	
@@ -460,7 +490,7 @@ public class Project2 {
 									break;
 								}
 							}
-							d_conditions=d_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							d_conditions=d_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
 						}
 						
 						if (d_existWhere) 
@@ -483,7 +513,6 @@ public class Project2 {
 						catch (Exception e){
 							System.out.println("<error detected>");
 						}
-						
 						System.out.println();
 						break;
 					case "6": // Update
@@ -499,8 +528,8 @@ public class Project2 {
 						//업데이트할 테이블을 쿼리에 추가함 
 						String[] u_tableList = table_name.split(",");	
 						for(int i=0;i<u_tableList.length;i++) { u_tableList[i] = u_tableList[i].trim(); }
-						for(int i=0;i<u_tableList.length - 1;i++) { update_query = update_query +SCHEMA_NAME+"."+ u_tableList[i] + ", "; }
-						update_query =update_query + SCHEMA_NAME + "." +u_tableList[u_tableList.length-1];
+						for(int i=0;i<u_tableList.length - 1;i++) { update_query = update_query +SCHEMA_NAME+"."+ "\""+u_tableList[i]+"\"" + ", "; }
+						update_query =update_query + SCHEMA_NAME + "." +"\""+u_tableList[u_tableList.length-1]+"\"";
 						
 						//WHERE절, 조건확인
 						while(u_condcheck)
@@ -569,7 +598,7 @@ public class Project2 {
 								}
 							}
 							//조건문 생성
-							u_conditions=u_conditions+condition_column + " " + Operator + " " + compareValue + " " + boolOp;
+							u_conditions=u_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
 							
 						}
 						update_query +=" SET ";
@@ -578,7 +607,7 @@ public class Project2 {
 						System.out.print("Please specify column names which you want to update : ");
 						String updateAttribute=sc.nextLine();
 						String[] updateAttributes = updateAttribute.split(",");
-						for(int i=0;i<updateAttributes.length;i++) { updateAttributes[i] = updateAttributes[i].trim(); }
+						for(int i=0;i<updateAttributes.length;i++) { updateAttributes[i] = "\""+updateAttributes[i].trim()+"\""; }
 						
 						//업데이트할 값들을 입력함.
 						System.out.print("Please specify the value which you want to put : ");
