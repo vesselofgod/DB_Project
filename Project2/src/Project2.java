@@ -65,18 +65,17 @@ public class Project2 {
 		
 		
 		
-		int instruction; //instruction input받는 숫자
+		String instruction; //instruction input받는 숫자
 		while(true) {
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Please input the instruction number (1: Import from CSV, 2: Export to CSV, 3: Manipulate Data, 4: Exit) :");
-			instruction = sc.nextInt();
-			sc.nextLine();
+			instruction = sc.nextLine();
 			String table_name; // 수정하거나 참조하는 table name
 			String file_name; // 참조하는 file name
 			String CSV_file; // 쓰거나 참조하는 CSV file name
-			int man_instruction; // 4번에서 사용하는 manipulate instruction
+			String man_instruction; // 4번에서 사용하는 manipulate instruction
 			switch(instruction) {
-			case 1: // Import from CSV
+			case "1": // Import from CSV
 				System.out.println("[Import from CSV]");
 				System.out.print("Please specify the filename for table description) : ");
 				file_name = sc.nextLine();
@@ -90,7 +89,7 @@ public class Project2 {
 				// failure 개수만큼 loop돌려서 출력해주기
 				System.out.println();
 				break;
-			case 2: // Export to CSV
+			case "2": // Export to CSV
 				System.out.println("[Export to CSV]");
 				System.out.print("Please specify the table name : ");
 				table_name = sc.nextLine();
@@ -122,28 +121,27 @@ public class Project2 {
 					System.out.println("Data export completed.");
 				}
 				catch (Exception e) {
-					System.out.println(e);
+					System.out.println("<Error detected>");
 				}
 				System.out.println();
 				break;
-			case 3: // Manipulate Data
+			case "3": // Manipulate Data
 				while(true) {
 					System.out.println("[Manipulate Data]");
 					System.out.print("Please input the instruction number (1: Show Tables, 2: Describe Table, 3: Select, "
 							+ "4: Insert, 5: Delete, 6: Update, 7: Drop Table, 8: Back to main) : ");
-					man_instruction = sc.nextInt();
-					sc.nextLine();
+					man_instruction = sc.nextLine();
 					String select; // select에 들어가는 string - parsing 필요
 					
 					switch (man_instruction) {
-					case 1: // Show tables
+					case "1": // Show tables
 						System.out.println("=======");
 						System.out.println("Table List");
 						System.out.println("=======");
 						//실제 연산에서 table의 이름들을 가져와서 출력함 (출력해야 할 table의 개수를 같이 리턴해주면 for문으로 돌리기)
 						System.out.println();
 						break;
-					case 2: // Describe table
+					case "2": // Describe table
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
 						System.out.println("==================================================================");
@@ -152,7 +150,7 @@ public class Project2 {
 						//실제 연산에서 column name과 data type을 가져와서 출력 (출력해야 할 column 개수를 같이 리턴해주면 for문으로 돌리기)
 						System.out.println();
 						break;
-					case 3: // Select
+					case "3": // Select
 						String select_query = "SELECT "; 
 						String s_order_column; //select query의 ordering이 필요한 column
 						boolean s_condcheck=true; //condition boolean flag
@@ -311,7 +309,7 @@ public class Project2 {
 						
 						System.out.println();
 						break;
-					case 4: // Insert
+					case "4": // Insert
 						String values;
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
@@ -334,11 +332,11 @@ public class Project2 {
 						
 						//query만들기
 						String insert_query = "INSERT INTO ";
-						insert_query = insert_query +SCHEMA_NAME+"." +table_name + "(";
+						insert_query = insert_query +SCHEMA_NAME+"." + "\"" + table_name + "\"" + "(";
 						for(int i=0;i<insert_column.length - 1;i++) {
-							insert_query = insert_query + insert_column[i] + ", ";
+							insert_query = insert_query + "\"" + insert_column[i] + "\"" + ", ";
 						}
-						insert_query = insert_query + insert_column[insert_column.length - 1] + ") VALUES (";
+						insert_query = insert_query + "\"" + insert_column[insert_column.length - 1] + "\"" + ") VALUES (";
 						
 						// integer면 그대로, string이면 ''를 붙여서 query만들기
 						for(int i=0;i<insert_value.length - 1;i++) {
@@ -379,7 +377,7 @@ public class Project2 {
 						//연산 실패시 error출력되어야 함
 						System.out.println();
 						break;
-					case 5: // Delete
+					case "5": // Delete
 						String delete_query = "DELETE FROM ";
 						boolean d_condcheck=true; //condition boolean flag
 						boolean d_existWhere=false; //delete문에 where절이 필요한지 check함.
@@ -488,7 +486,7 @@ public class Project2 {
 						
 						System.out.println();
 						break;
-					case 6: // Update
+					case "6": // Update
 						String update_query = "UPDATE ";
 						boolean u_condcheck=true; //condition boolean flag
 						boolean u_existWhere=false; //update에 where절이 필요한지 check함.
@@ -615,7 +613,7 @@ public class Project2 {
 						}
 						System.out.println();
 						break;
-					case 7: // Drop table
+					case "7": // Drop table
 						char sure; // 진짜로 table을 삭제할 것인가에 대해 물어보는 질문의 답을 저장
 						System.out.print("Please specify the table name : ");
 						table_name = sc.nextLine();
@@ -626,7 +624,7 @@ public class Project2 {
 						if (sure == 'Y') {
 							//실제 삭제 진행
 							try {
-								String drop_query = "DROP TABLE " + SCHEMA_NAME+"."+table_name + ";";
+								String drop_query = "DROP TABLE " + SCHEMA_NAME + "." + "\"" + table_name + "\"" + ";";
 								st.executeUpdate(drop_query);
 								System.out.println("<The table " + table_name + " is deleted>");
 							}
@@ -641,14 +639,19 @@ public class Project2 {
 						}
 						System.out.println();
 						break;
-					case 8: // Back to main
+					case "8": // Back to main
 						break;
 					}
-					if(man_instruction == 8) break;
+					try {
+						if(Integer.parseInt(man_instruction) == 8) {
+							break;
+						}
+					}
+					catch(NumberFormatException s) {	}
 				}
 				System.out.println();
 				break;
-			case 4: // Exit
+			case "4": // Exit
 				 System.exit(0);
 				 break;
 			default:
