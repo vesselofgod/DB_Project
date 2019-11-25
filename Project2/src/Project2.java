@@ -236,7 +236,7 @@ public class Project2 {
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
 									break;
 								case 1: 
-									pstmt.setString(i, dataarr[i-1].trim());
+									pstmt.setString(i, dataarr[i-1]);
 									break;
 								case 2: 
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
@@ -246,7 +246,7 @@ public class Project2 {
 									break;
 								case 4:  // numeric
 									System.out.println(dataarr[i-1]);
-									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
+									BigDecimal fdata = new BigDecimal(dataarr[i-1]);
 									pstmt.setObject(i, fdata, Types.NUMERIC);
 									break;
 									//
@@ -257,7 +257,6 @@ public class Project2 {
 							pstmt.executeUpdate();
 							succ_num ++;
 						} catch (org.postgresql.util.PSQLException e) {
-							System.out.println(e);
 							fail_num ++;
 							fail_line_num.add(k);
 							fail_line_info.add(data);
