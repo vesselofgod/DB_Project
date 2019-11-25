@@ -155,7 +155,6 @@ public class Project2 {
 				}catch (IOException e2) {
 					System.out.println(e2);
 				}catch (org.postgresql.util.PSQLException e) {
-					System.out.println(e);
 					System.out.println("Table already exists.");
 				}
 				
@@ -237,7 +236,7 @@ public class Project2 {
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
 									break;
 								case 1: 
-									pstmt.setString(i, "'"+dataarr[i-1]+"'");
+									pstmt.setString(i, dataarr[i-1].trim());
 									break;
 								case 2: 
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
