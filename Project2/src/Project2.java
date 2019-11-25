@@ -291,33 +291,41 @@ public class Project2 {
 				table_name = sc.nextLine();
 				System.out.print("Please specify the CSV filename : ");
 				CSV_file = sc.nextLine();
-				// 실제처리 (CSV파일이 잘못 들어오거나 없는 table을 건드는 경우 어떻게 해야하는가?)
-				ResultSet rs2 = st.executeQuery("SELECT * FROM " + table_name);
-				ResultSetMetaData rs2_meta = rs2.getMetaData();
+				String[] checker = CSV_file.split("\\.");
 				
-				try {
-					BufferedWriter wr = Files.newBufferedWriter(Paths.get(CSV_file), Charset.forName("UTF-8"));
-					int columnNumber = rs2_meta.getColumnCount();
-					
-					for(int i = 0;i < columnNumber - 1;i++) {
-						wr.write(rs2_meta.getColumnName(i + 1) + ',');
-					}
-					wr.write(rs2_meta.getColumnName(columnNumber));
-					wr.newLine();
-					
-					while(rs2.next()) {
-						for(int i = 0; i < columnNumber - 1; i++) {
-							wr.write(rs2.getString(i + 1) + ',');
+				if(checker[1].toLowerCase().compareTo("csv") == 0)
+				{
+					// 실제처리 (CSV파일이 잘못 들어오거나 없는 table을 건드는 경우 어떻게 해야하는가?)
+					try {
+						ResultSet rs2 = st.executeQuery("SELECT * FROM " + "\"" + table_name + "\"");
+						ResultSetMetaData rs2_meta = rs2.getMetaData();
+						
+						BufferedWriter wr = Files.newBufferedWriter(Paths.get(CSV_file), Charset.forName("UTF-8"));
+						int columnNumber = rs2_meta.getColumnCount();
+						
+						for(int i = 0;i < columnNumber - 1;i++) {
+							wr.write(rs2_meta.getColumnName(i + 1) + ',');
 						}
-						wr.write(rs2.getString(columnNumber));
+						wr.write(rs2_meta.getColumnName(columnNumber));
 						wr.newLine();
+						
+						while(rs2.next()) {
+							for(int i = 0; i < columnNumber - 1; i++) {
+								wr.write(rs2.getString(i + 1) + ',');
+							}
+							wr.write(rs2.getString(columnNumber));
+							wr.newLine();
+						}
+						
+						wr.close();
+						System.out.println("Data export completed.");
 					}
-					
-					wr.close();
-					System.out.println("Data export completed.");
+					catch (Exception e) {
+						System.out.println("<Error Detected>");
+					}
 				}
-				catch (Exception e) {
-					System.out.println("<Error detected>");
+				else {
+					System.out.println("<Error Detected>");
 				}
 				System.out.println();
 				break;
