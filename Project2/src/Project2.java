@@ -61,12 +61,12 @@ public class Project2 {
 		Connection conn = DriverManager.getConnection(DB_CONNECTION_URL, props);
 		conn.setAutoCommit(true);
 		/* Create SQL statement object */
-		Statement st = conn.createStatement();
 		
 		
 		
 		String instruction; //instruction input받는 숫자
 		while(true) {
+			Statement st = conn.createStatement();
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Please input the instruction number (1: Import from CSV, 2: Export to CSV, 3: Manipulate Data, 4: Exit) :");
 			instruction = sc.nextLine();
