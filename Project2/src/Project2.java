@@ -10,7 +10,12 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Types;
+import java.text.NumberFormat;
+import java.text.ParseException;
+import java.math. *;
 
 public class Project2 {
 // scanner사용시 주의할 점! : nextInt같은 경우는 개행문자를 입력받지 않기 때문에 뒤에 nextLine을 쓰면 개행문자를 받아버려서 입력이 있는 것으로 처리됨 ( nextLine으로 받은 변수들은
@@ -70,23 +75,215 @@ public class Project2 {
 			Scanner sc = new Scanner(System.in);
 			System.out.print("Please input the instruction number (1: Import from CSV, 2: Export to CSV, 3: Manipulate Data, 4: Exit) :");
 			instruction = sc.nextLine();
-			String table_name; // 수정하거나 참조하는 table name
-			String file_name; // 참조하는 file name
-			String CSV_file; // 쓰거나 참조하는 CSV file name
-			String man_instruction; // 4번에서 사용하는 manipulate instruction
+			String table_name=""; // 수정하거나 참조하는 table name
+			String file_name=""; // 참조하는 file name
+			String CSV_file=""; // 쓰거나 참조하는 CSV file name
+			String man_instruction=""; // 4번에서 사용하는 manipulate instruction
 			switch(instruction) {
 			case "1": // Import from CSV
 				System.out.println("[Import from CSV]");
 				System.out.print("Please specify the filename for table description) : ");
 				file_name = sc.nextLine();
-				System.out.println("Table is newly created as describled in the file");
+				
+				List<String> column_name = new ArrayList<String>();
+				List<String> column_type = new ArrayList<String>();
+				// file에서 table 정보 가져오기 
+				try {
+					File table_info_f = new File(file_name);
+					FileReader table_info_fr = new FileReader (table_info_f);
+					BufferedReader table_info= new BufferedReader(table_info_fr);
+					//table name 받기 
+					String table_namet = table_info.readLine();
+					String[] a = table_namet.split(":");
+					table_name =  a[1].trim()  ;
+					
+					//column info 받기 
+					String table_t = table_info.readLine();
+					String[] a1 = table_t.split(":");
+					while (a1[0].trim().charAt(0) !='P') {
+						column_name.add("\""+a1[1].trim()+"\"");   // column_name "    " 상태 
+						
+						table_t = table_info.readLine();
+						a1 = table_t.split(":");
+						column_type.add(a1[1].trim());
+						
+						table_t = table_info.readLine();
+						a1 = table_t.split(":");
+					}
+					
+					//PK 되는 것 받기 
+					String querypk = "";
+					//List<String> pk = new ArrayList<String> ();  // 여기에 PK의 이름 다 넣기 
+					String[] pks = a1[1].split(",");
+					for (int i=0; i<pks.length; i++) {
+						//pk.add("\""+pks[i].trim()+"\"");
+						querypk += "\""+pks[i].trim()+"\""+ ",";
+					}
+					querypk = querypk.substring(0, querypk.length()-1) ;
+					
+					//NOT NULL 받기 
+					List<Integer> nn = new ArrayList<Integer> ();  // 여기에 NOT NULL 인 column index 다 넣기 
+					table_t = table_info.readLine();
+					a1 = table_t.split(":");
+					String[] nns = a1[1].split(",");
+					for(int i=0; i<nns.length; i++) {
+						nn.add(column_name.indexOf("\""+nns[i].trim()+"\""));
+					}
+					
+					
+					//column type + not null 합치기 
+					for (int i=0; i<nn.size(); i++) {
+						String a3 = column_type.get(nn.get(i));
+						column_type.set(nn.get(i), a3+ " not null");
+					}
+					
+					//column name + column type 합치기 
+					String name_type = "";
+					for (int i=0; i< column_name.size(); i++) {
+						name_type +=  column_name.get(i)  + column_type.get(i) + ",";
+					}
+					
+					//SQL QUERY 실행 
+					st.execute("create table \"" +table_name+ "\"(" +name_type + 
+							"primary key (" +querypk+"));");
+					table_info.close();
+					table_info_fr.close();
+					System.out.println("Table is newly created as describled in the file");
+					
+				}catch (FileNotFoundException e1) {
+					System.out.println(e1);
+				}catch (IOException e2) {
+					System.out.println(e2);
+				}catch (org.postgresql.util.PSQLException e) {
+					System.out.println(e);
+					System.out.println("Table already exists.");
+				}
+				
+				
+				// CSV file에서 data 받아오는 과정 start
 				System.out.print("Please specify the CSV filename : ");
 				CSV_file = sc.nextLine();
 				// 실제 처리
-				// 오류없이 돌아간 경우
-				System.out.println("Data import completed. (Insertion Success : ");
-				// 오류가 난 경우
-				// failure 개수만큼 loop돌려서 출력해주기
+				
+				int succ_num = 0;   // 넣는 데에 성공한 tuple의 개수
+				int fail_num = 0;   // 넣는 데에 실패한 tuple의 개수 
+				List<Integer> fail_line_num = new ArrayList<Integer> () ;
+				List<String> fail_line_info = new ArrayList<String> ();
+				
+				try {
+					BufferedReader bf = 
+							new BufferedReader (new InputStreamReader (new FileInputStream(CSV_file), "UTF-8"));
+					String column_names = bf.readLine();
+					String[] column_namearr = column_names.split(",");
+					
+					if (column_namearr.length != column_name.size()) {
+						System.out.println
+						("Data inport failure. (The number of columns does not match between the table description and the CSV file.)\n");
+						continue;
+					}
+					String datacol = "";
+					
+					// column_namearr -> data type 4가지로 나누기 
+					List<Integer> col_data_type = new ArrayList<Integer> ();
+					//column_namearr의 column 대소문자 구별 및 양옆 공백 없애기 
+					for (int i=0 ; i<column_namearr.length; i++) {
+						column_namearr[i] =  "\""+ (column_namearr[i].trim()) +"\"";
+						datacol = datacol +column_namearr[i] + ",";
+						
+						int index = column_name.indexOf(column_namearr[i]);
+						
+						if (column_type.get(index).contains("Date")) {
+							col_data_type.add(2);
+							continue;
+						} else if (column_type.get(index).contains("Time")){
+							col_data_type.add(3);
+							continue;
+						} else if (column_type.get(index).contains("char")) {
+							col_data_type.add(1);
+							continue;
+						} else if (column_type.get(index).contains("int")){
+							col_data_type.add(0);
+							continue;
+						} else {// numeric value
+							col_data_type.add(4);
+							continue;
+						}
+							
+					}
+					
+					
+					// 0 :숫자 관련  1: string 관련 2: date 관련 3: time 관련 
+					// 이에 따라 query 만들기 
+					datacol = datacol.substring(0, datacol.length()-1);
+					//read csv file line by line 
+					// 읽을 때마다 집어 넣고 success fail check 
+					
+					int k = 1;
+					String data = bf.readLine();
+					k ++;
+					String question_marks = "(";
+					for (int i=0; i<column_namearr.length; i++) {
+						question_marks += "?,";
+					}
+					question_marks = question_marks.substring(0, question_marks.length() -1);
+					question_marks += ")";
+					while (data != null) {
+						String query = "insert into \"" + table_name + "\" (" + datacol + ")"+ "values "+question_marks;
+						PreparedStatement pstmt = conn.prepareStatement(query);
+						String[] dataarr = data.split(",");
+						for (int i=1; i<dataarr.length+1; i++) {
+							switch (col_data_type.get(i-1)) {
+								case 0:// numeric value 처리 
+									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
+									break;
+								case 1: 
+									pstmt.setString(i, "'"+dataarr[i-1]+"'");
+									break;
+								case 2: 
+									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
+									break;
+								case 3:
+									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
+									break;
+								case 4:  // numeric
+									System.out.println(dataarr[i-1]);
+									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
+									pstmt.setObject(i, fdata, Types.NUMERIC);
+									break;
+									//
+							}
+						}
+						
+						try {
+							pstmt.executeUpdate();
+							succ_num ++;
+						} catch (org.postgresql.util.PSQLException e) {
+							System.out.println(e);
+							fail_num ++;
+							fail_line_num.add(k);
+							fail_line_info.add(data);
+						}
+						
+						data = bf.readLine();
+						pstmt.close();
+						k++;
+					}
+					// 오류없이 돌아간 경우
+					System.out.println("Data import completed. (Insertion Success : " + succ_num+ ", Insertion Failure : " + fail_num+ ")");
+					// 오류가 난 경우
+					// failure 개수만큼 loop돌려서 출력해주기	
+					if (fail_num != 0) {
+						for (int i=0; i<fail_num; i++) {
+							System.out.println("Failed tuple : " + fail_line_num.get(i) + " line in CSV - " + fail_line_info.get(i));
+						}
+					}
+					bf.close();
+				} catch (FileNotFoundException e1) {
+					System.out.println(e1);
+				}catch (IOException e2) {
+					System.out.println(e2);
+				} 
+				
 				System.out.println();
 				break;
 			case "2": // Export to CSV
