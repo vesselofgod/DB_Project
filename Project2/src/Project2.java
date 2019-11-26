@@ -489,7 +489,34 @@ public class Project2 {
 								}
 							}
 
-								s_conditions=s_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
+							//condition query만들기 ''처리
+							try {
+								ResultSet[] rs_all_table = new ResultSet[tableList.length];
+								ResultSetMetaData[] rs_meta = new ResultSetMetaData[tableList.length];
+								int table_index = 0;
+								int column_index = 1;
+								for(int i=0;i<tableList.length;i++) {
+									String get_all_table = "SELECT * FROM \"" + tableList[i] + "\"";
+									rs_all_table[i] = st.executeQuery(get_all_table);
+									rs_meta[i] = rs_all_table[i].getMetaData();
+								}
+								for(int i=0;i<tableList.length;i++) {
+									for(int j=1;j<=rs_meta[i].getColumnCount();j++) {
+										if(rs_meta[i].getColumnName(j).compareTo(condition_column) == 0) {
+											table_index = i;
+											column_index = j;
+										}
+									}
+								}
+								
+								if(rs_meta[table_index].getColumnType(column_index) == 4 | rs_meta[table_index].getColumnType(column_index) == 2) {
+									s_conditions=s_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp; 
+								}
+								else {
+									s_conditions=s_conditions+"\""+condition_column+"\"" + " " + Operator + " '" + compareValue + "' " + boolOp; 
+								}
+							}
+							catch (Exception e) { }
 						}
 						
 						if (s_existWhere) select_query = select_query+" WHERE "+s_conditions;
