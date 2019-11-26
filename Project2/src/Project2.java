@@ -236,7 +236,7 @@ public class Project2 {
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
 									break;
 								case 1: 
-									pstmt.setString(i, "'"+dataarr[i-1]+"'");
+									pstmt.setString(i, dataarr[i-1]);
 									break;
 								case 2: 
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
@@ -245,7 +245,6 @@ public class Project2 {
 									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
 									break;
 								case 4:  // numeric
-									System.out.println(dataarr[i-1]);
 									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
 									pstmt.setObject(i, fdata, Types.NUMERIC);
 									break;
@@ -731,21 +730,47 @@ public class Project2 {
 								String selectboolOps=sc.nextLine();
 								if(selectboolOps.equals("1")){
 									boolOp = "AND ";
-									s_skipCondition=false;
+									d_skipCondition=false;
 									break;
 								}
 								else if(selectboolOps.equals("2")){
 									boolOp = "OR ";
-									s_skipCondition=false;
+									d_skipCondition=false;
 									break;
 								}
 								else if (selectboolOps.equals("3")) {
 									//이 경우에는 condition loop를 빠져나옴
-									s_condcheck=false;
+									d_condcheck=false;
 									break;
 								}
 							}
-							d_conditions=d_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
+							try {
+								ResultSet[] rs_all_table = new ResultSet[d_tableList.length];
+								ResultSetMetaData[] rs_meta = new ResultSetMetaData[d_tableList.length];
+								int table_index = 0;
+								int column_index = 1;
+								for(int i=0;i<d_tableList.length;i++) {
+									String get_all_table = "SELECT * FROM \"" + d_tableList[i] + "\"";
+									rs_all_table[i] = st.executeQuery(get_all_table);
+									rs_meta[i] = rs_all_table[i].getMetaData();
+								}
+								for(int i=0;i<d_tableList.length;i++) {
+									for(int j=1;j<=rs_meta[i].getColumnCount();j++) {
+										if(rs_meta[i].getColumnName(j).compareTo(condition_column) == 0) {
+											table_index = i;
+											column_index = j;
+										}
+									}
+								}
+								
+								if(rs_meta[table_index].getColumnType(column_index) == 4 | rs_meta[table_index].getColumnType(column_index) == 2) {
+									d_conditions=d_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp; 
+								}
+								else {
+									d_conditions=d_conditions+"\""+condition_column+"\"" + " " + Operator + " '" + compareValue + "' " + boolOp; 
+								}
+							}
+							catch (Exception e) { }					
 						}
 						
 						if (d_existWhere) 
@@ -839,23 +864,49 @@ public class Project2 {
 								String selectboolOps=sc.nextLine();
 								if(selectboolOps.equals("1")){
 									boolOp = "AND ";
-									s_skipCondition=false;
+									u_skipCondition=false;
 									break;
 								}
 								else if(selectboolOps.equals("2")){
 									boolOp = "OR ";
-									s_skipCondition=false;
+									u_skipCondition=false;
 									break;
 								}
 								else if (selectboolOps.equals("3")) {
 									//이 경우에는 condition loop를 빠져나옴
-									s_condcheck=false;
+									u_condcheck=false;
 									break;
 								}
 							}
 							//조건문 생성
-							u_conditions=u_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp;
-							
+							//condition query만들기 ''처리
+							try {
+								ResultSet[] rs_all_table = new ResultSet[u_tableList.length];
+								ResultSetMetaData[] rs_meta = new ResultSetMetaData[u_tableList.length];
+								int table_index = 0;
+								int column_index = 1;
+								for(int i=0;i<u_tableList.length;i++) {
+									String get_all_table = "SELECT * FROM \"" + u_tableList[i] + "\"";
+									rs_all_table[i] = st.executeQuery(get_all_table);
+									rs_meta[i] = rs_all_table[i].getMetaData();
+								}
+								for(int i=0;i<u_tableList.length;i++) {
+									for(int j=1;j<=rs_meta[i].getColumnCount();j++) {
+										if(rs_meta[i].getColumnName(j).compareTo(condition_column) == 0) {
+											table_index = i;
+											column_index = j;
+										}
+									}
+								}
+
+								if(rs_meta[table_index].getColumnType(column_index) == 4 | rs_meta[table_index].getColumnType(column_index) == 2) {
+									u_conditions=u_conditions+"\""+condition_column+"\"" + " " + Operator + " " + compareValue + " " + boolOp; 
+								}
+								else {
+									u_conditions=u_conditions+"\""+condition_column+"\"" + " " + Operator + " '" + compareValue + "' " + boolOp; 
+								}
+							}
+							catch (Exception e) { }							
 						}
 						update_query +=" SET ";
 
