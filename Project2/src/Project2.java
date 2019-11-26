@@ -155,6 +155,7 @@ public class Project2 {
 				}catch (IOException e2) {
 					System.out.println(e2);
 				}catch (org.postgresql.util.PSQLException e) {
+					System.out.println(e);
 					System.out.println("Table already exists.");
 				}
 				
@@ -236,7 +237,7 @@ public class Project2 {
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
 									break;
 								case 1: 
-									pstmt.setString(i, dataarr[i-1]);
+									pstmt.setString(i, "'"+dataarr[i-1]+"'");
 									break;
 								case 2: 
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
@@ -246,15 +247,21 @@ public class Project2 {
 									break;
 								case 4:  // numeric
 									System.out.println(dataarr[i-1]);
-									BigDecimal fdata = new BigDecimal(dataarr[i-1]);
+									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
 									pstmt.setObject(i, fdata, Types.NUMERIC);
 									break;
 									//
 							}
 						}
+						if (dataarr.length < column_namearr.length) {
+							for (int i= dataarr.length+1; i<column_namearr.length+1; i++) {
+								pstmt.setNull(i, java.sql.Types.NULL);
+							}
+						}
 						
 						try {
 							pstmt.executeUpdate();
+							pstmt.clearParameters();
 							succ_num ++;
 						} catch (org.postgresql.util.PSQLException e) {
 							fail_num ++;
