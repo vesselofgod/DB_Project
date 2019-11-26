@@ -132,8 +132,10 @@ public class Project2 {
 					
 					//column type + not null 합치기 
 					for (int i=0; i<nn.size(); i++) {
-						String a3 = column_type.get(nn.get(i));
-						column_type.set(nn.get(i), a3+ " not null");
+						if (nn.get(i) != -1) {
+							String a3 = column_type.get(nn.get(i));
+							column_type.set(nn.get(i), a3+ " not null");
+						}
 					}
 					
 					//column name + column type 합치기 
@@ -229,26 +231,40 @@ public class Project2 {
 						String query = "insert into \"" + table_name + "\" (" + datacol + ")"+ "values "+question_marks;
 						PreparedStatement pstmt = conn.prepareStatement(query);
 						String[] dataarr = data.split(",");
-						for (int i=1; i<dataarr.length+1; i++) {
-							switch (col_data_type.get(i-1)) {
-								case 0:// numeric value 처리 
-									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
-									break;
-								case 1: 
-									pstmt.setString(i, dataarr[i-1]);
-									break;
-								case 2: 
-									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
-									break;
-								case 3:
-									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
-									break;
-								case 4:  // numeric
-									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
-									pstmt.setObject(i, fdata, Types.NUMERIC);
-									break;
-									//
+						for (int i=1; i<dataarr.length + 1; i++) {
+							if (dataarr[i-1] == "") {
+								pstmt.setNull(i, java.sql.Types.NULL);
+								continue;
 							}
+							ResultSet imprrset = st.executeQuery("select * from "+table_name);
+							ResultSetMetaData imprrsetmet = imprrset.getMetaData();
+							int location1 = column_name.indexOf(column_namearr[0]) + 1;
+							int location = column_name.indexOf(column_namearr[i-1]) + 1;
+							String datacoltype = imprrsetmet.getColumnTypeName(location);
+							String fortestmy = imprrsetmet.getColumnTypeName(column_name.indexOf(column_namearr[0])+1);
+							
+							
+							if (datacoltype.contains("int")) {
+								pstmt.setInt(i, Integer.parseInt(dataarr[i-1].trim()));
+							}
+							if (datacoltype.contains("date")) {
+								pstmt.setDate(i, Date.valueOf(dataarr[i-1].trim()));
+							}
+							if (datacoltype.contains("time")) {
+								String[] timetoconvert = dataarr[i-1].split(":");
+								int hourtoconvert = Integer.parseInt(timetoconvert[0].trim());
+								int minutetoconvert = Integer.parseInt(timetoconvert[1].trim());
+								java.sql.Time inputtime = new java.sql.Time(hourtoconvert, minutetoconvert, 0);
+								pstmt.setTime(i, inputtime);
+							}
+							if (datacoltype.contains("char")){
+								pstmt.setString(i, dataarr[i-1]);
+							}
+							if (datacoltype.contains("numeric")) {
+								BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
+								pstmt.setObject(i, fdata, Types.NUMERIC);
+							}
+							
 						}
 						if (dataarr.length < column_namearr.length) {
 							for (int i= dataarr.length+1; i<column_namearr.length+1; i++) {
