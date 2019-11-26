@@ -69,9 +69,9 @@ public class Project2 {
 		
 		
 		String instruction; //instruction input받는 숫자
+		Scanner sc = new Scanner(System.in);
 		while(true) {
 			Statement st = conn.createStatement();
-			Scanner sc = new Scanner(System.in);
 			System.out.print("Please input the instruction number (1: Import from CSV, 2: Export to CSV, 3: Manipulate Data, 4: Exit) :");
 			instruction = sc.nextLine();
 			String table_name=""; // 수정하거나 참조하는 table name
@@ -238,10 +238,10 @@ public class Project2 {
 							}
 							ResultSet imprrset = st.executeQuery("select * from "+table_name);
 							ResultSetMetaData imprrsetmet = imprrset.getMetaData();
-							int location1 = column_name.indexOf(column_namearr[0]) + 1;
+							//int location1 = column_name.indexOf(column_namearr[0]) + 1;
 							int location = column_name.indexOf(column_namearr[i-1]) + 1;
 							String datacoltype = imprrsetmet.getColumnTypeName(location);
-							String fortestmy = imprrsetmet.getColumnTypeName(column_name.indexOf(column_namearr[0])+1);
+							//String fortestmy = imprrsetmet.getColumnTypeName(column_name.indexOf(column_namearr[0])+1);
 							
 							
 							if (datacoltype.contains("int")) {
@@ -998,20 +998,19 @@ public class Project2 {
 							break;
 						}
 					}
-					catch(NumberFormatException s) {s.printStackTrace();	}
+					catch(NumberFormatException s) {s.printStackTrace();}
 				}
 				System.out.println();
 				break;
 			case "4": // Exit
-				 System.exit(0);
-				 break;
+				sc.close();
+				System.exit(0);
+				break;
 			default:
 				System.out.println();
 				break;
 			}
 			st.close();
-			sc.close();
-			
 		}
 	}
 }
