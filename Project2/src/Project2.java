@@ -133,8 +133,10 @@ public class Project2 {
 					
 					//column type + not null 합치기 
 					for (int i=0; i<nn.size(); i++) {
-						String a3 = column_type.get(nn.get(i));
-						column_type.set(nn.get(i), a3+ " not null");
+						if (nn.get(i) != -1) {
+							String a3 = column_type.get(nn.get(i));
+							column_type.set(nn.get(i), a3+ " not null");
+						}
 					}
 					
 					//column name + column type 합치기 
@@ -230,19 +232,27 @@ public class Project2 {
 						String query = "insert into \"" + table_name + "\" (" + datacol + ")"+ "values "+question_marks;
 						PreparedStatement pstmt = conn.prepareStatement(query);
 						String[] dataarr = data.split(",");
-						for (int i=1; i<dataarr.length+1; i++) {
+						for (int i=1; i<dataarr.length + 1; i++) {
+							if (dataarr[i-1] == "") {
+								pstmt.setNull(i, java.sql.Types.NULL);
+								continue;
+							}
 							switch (col_data_type.get(i-1)) {
 								case 0:// numeric value 처리 
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
 									break;
 								case 1: 
-									pstmt.setString(i, dataarr[i-1]);
+									pstmt.setString(i, "'"+dataarr[i-1]+"'");
 									break;
 								case 2: 
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
 									break;
 								case 3:
-									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
+									String[] timetoconvert = dataarr[i-1].split(":");
+									int hourtoconvert = Integer.parseInt(timetoconvert[0].trim());
+									int minutetoconvert = Integer.parseInt(timetoconvert[1].trim());
+									java.sql.Time inputtime = new java.sql.Time(hourtoconvert, minutetoconvert, 0);
+									pstmt.setTime(i, inputtime);
 									break;
 								case 4:  // numeric
 									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
