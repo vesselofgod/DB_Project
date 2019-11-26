@@ -13,8 +13,6 @@ import java.nio.file.Paths;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Types;
-import java.text.NumberFormat;
-import java.text.ParseException;
 import java.math. *;
 
 public class Project2 {
@@ -37,6 +35,7 @@ public class Project2 {
 				parse[counter] = word.split(":")[1];
 				counter+=1;
 			}
+			scan.close();
 		}
 		catch (FileNotFoundException e) 
 		{
@@ -133,10 +132,8 @@ public class Project2 {
 					
 					//column type + not null 합치기 
 					for (int i=0; i<nn.size(); i++) {
-						if (nn.get(i) != -1) {
-							String a3 = column_type.get(nn.get(i));
-							column_type.set(nn.get(i), a3+ " not null");
-						}
+						String a3 = column_type.get(nn.get(i));
+						column_type.set(nn.get(i), a3+ " not null");
 					}
 					
 					//column name + column type 합치기 
@@ -232,11 +229,7 @@ public class Project2 {
 						String query = "insert into \"" + table_name + "\" (" + datacol + ")"+ "values "+question_marks;
 						PreparedStatement pstmt = conn.prepareStatement(query);
 						String[] dataarr = data.split(",");
-						for (int i=1; i<dataarr.length + 1; i++) {
-							if (dataarr[i-1] == "") {
-								pstmt.setNull(i, java.sql.Types.NULL);
-								continue;
-							}
+						for (int i=1; i<dataarr.length+1; i++) {
 							switch (col_data_type.get(i-1)) {
 								case 0:// numeric value 처리 
 									pstmt.setInt(i, Integer.parseInt(dataarr[i-1]));
@@ -248,11 +241,7 @@ public class Project2 {
 									pstmt.setDate(i, Date.valueOf(dataarr[i-1]));
 									break;
 								case 3:
-									String[] timetoconvert = dataarr[i-1].split(":");
-									int hourtoconvert = Integer.parseInt(timetoconvert[0].trim());
-									int minutetoconvert = Integer.parseInt(timetoconvert[1].trim());
-									java.sql.Time inputtime = new java.sql.Time(hourtoconvert, minutetoconvert, 0);
-									pstmt.setTime(i, inputtime);
+									pstmt.setTime(i, Time.valueOf(dataarr[i-1]));
 									break;
 								case 4:  // numeric
 									BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
@@ -590,7 +579,7 @@ public class Project2 {
 									//10줄씩 끊어서 출력하는 매커니즘
 									System.out.println();
 									System.out.print("<Press enter>");
-									String pressEnter=sc.nextLine();//별 의미 없이 엔터를 치기 전까지 끊어주는 용도.
+									sc.nextLine();//별 의미 없이 엔터를 치기 전까지 끊어주는 용도.
 								}
 								System.out.println();
 							}
@@ -993,7 +982,7 @@ public class Project2 {
 							break;
 						}
 					}
-					catch(NumberFormatException s) {	}
+					catch(NumberFormatException s) {s.printStackTrace();	}
 				}
 				System.out.println();
 				break;
@@ -1005,6 +994,8 @@ public class Project2 {
 				break;
 			}
 			st.close();
+			sc.close();
+			
 		}
 	}
 }
