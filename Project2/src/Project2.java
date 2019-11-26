@@ -468,23 +468,21 @@ public class Project2 {
 							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
 							
 							String boolOp="";
-							int selectboolOp;
 							while(true)
 							{
 								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
 								String selectboolOps=sc.nextLine();
-								selectboolOp=Integer.parseInt(selectboolOps);
-								if(selectboolOp ==1){
+								if(selectboolOps.equals("1")){
 									boolOp = "AND ";
 									s_skipCondition=false;
 									break;
 								}
-								else if(selectboolOp ==2){
+								else if(selectboolOps.equals("2")){
 									boolOp = "OR ";
 									s_skipCondition=false;
 									break;
 								}
-								else if (selectboolOp ==3) {
+								else if (selectboolOps.equals("3")) {
 									//이 경우에는 condition loop를 빠져나옴
 									s_condcheck=false;
 									break;
@@ -700,24 +698,23 @@ public class Project2 {
 							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
 							
 							String boolOp="";
-							int selectboolOp;
 							while(true)
 							{
 								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
 								String selectboolOps=sc.nextLine();
-								selectboolOp=Integer.parseInt(selectboolOps);
-								if(selectboolOp ==1){
+								if(selectboolOps.equals("1")){
 									boolOp = "AND ";
-									d_skipCondition=false;
+									s_skipCondition=false;
 									break;
 								}
-								else if(selectboolOp ==2){
+								else if(selectboolOps.equals("2")){
 									boolOp = "OR ";
-									d_skipCondition=false;
+									s_skipCondition=false;
 									break;
 								}
-								else if (selectboolOp ==3) {
-									d_condcheck=false;
+								else if (selectboolOps.equals("3")) {
+									//이 경우에는 condition loop를 빠져나옴
+									s_condcheck=false;
 									break;
 								}
 							}
@@ -750,7 +747,7 @@ public class Project2 {
 						String update_query = "UPDATE ";
 						boolean u_condcheck=true; //condition boolean flag
 						boolean u_existWhere=false; //update에 where절이 필요한지 check함.
-						boolean u_skipCondition = false;
+						boolean u_skipCondition = true;
 						String u_conditions=""; //where절의 문장.
 						
 						System.out.print("Please specify the table name : ");
@@ -809,22 +806,23 @@ public class Project2 {
 							if(compareOp==7) compareValue="'" +compareValue+"'";//String을 LIKE 'regEx'형식에 맞춰줌.
 							
 							String boolOp="";
-							int selectboolOp;
 							while(true)
 							{
 								System.out.print("Please specify the condition value (1: AND, 2: OR, 3: finish) : ");
 								String selectboolOps=sc.nextLine();
-								selectboolOp=Integer.parseInt(selectboolOps);
-								if(selectboolOp ==1){
+								if(selectboolOps.equals("1")){
 									boolOp = "AND ";
+									s_skipCondition=false;
 									break;
 								}
-								else if(selectboolOp ==2){
+								else if(selectboolOps.equals("2")){
 									boolOp = "OR ";
+									s_skipCondition=false;
 									break;
 								}
-								else if (selectboolOp ==3) {
-									u_condcheck=false;
+								else if (selectboolOps.equals("3")) {
+									//이 경우에는 condition loop를 빠져나옴
+									s_condcheck=false;
 									break;
 								}
 							}
