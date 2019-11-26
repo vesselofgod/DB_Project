@@ -258,7 +258,12 @@ public class Project2 {
 								pstmt.setTime(i, inputtime);
 							}
 							if (datacoltype.contains("char")){
-								pstmt.setString(i, dataarr[i-1]);
+								if ((dataarr[i-1].trim().charAt(0) == '"' )&&(dataarr[i-1].trim().charAt(dataarr[i-1].trim().length()-1)=='"')) {
+									String realdatach = dataarr[i-1].trim().replaceAll("^\"|\"$", "");;
+									pstmt.setString(i,realdatach);
+								} else {
+									pstmt.setString(i,  dataarr[i-1]);
+								}
 							}
 							if (datacoltype.contains("numeric")) {
 								BigDecimal fdata = new BigDecimal(dataarr[i-1].trim());
