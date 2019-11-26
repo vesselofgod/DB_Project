@@ -155,7 +155,6 @@ public class Project2 {
 				}catch (IOException e2) {
 					System.out.println(e2);
 				}catch (org.postgresql.util.PSQLException e) {
-					System.out.println(e);
 					System.out.println("Table already exists.");
 				}
 				
