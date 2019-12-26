@@ -18,3 +18,10 @@
 
 * ## project2
   * Due date : 11.26
+
+
+* ## project3
+  * Due date : 12.17
+  ![clone](https://user-images.githubusercontent.com/18081105/71463546-15d7e880-27fa-11ea-9013-a90812fd559c.png)
+  Design ER-diagram in above situation
+  ![Untitled Diagram (7)](https://user-images.githubusercontent.com/18081105/71463279-3489af80-27f9-11ea-832e-2e7d93142452.jpg)
