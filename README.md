@@ -6,7 +6,7 @@
 
 * ## poject1
   * Due date : 10.31
-  * DB EDR
+  * DB ER diagram
   * <img width="500" alt="tables" src="https://user-images.githubusercontent.com/18081105/67873221-763e0700-fb76-11e9-9d67-148be7a407d0.png">
   * problem 1 : 각 연도별로 전공마다, 연도, 전공명과 수업의 개수를 출력하시오
   * problem 2 : 2013년 1학기부터 2018년 2학기까지의 모든 수업 중(모든 학과를 통틀어)에서 **가장 많은 학생들이 재수강을 많이 한 순서** 로 3개 과목의 이름을 출력하시오
@@ -18,7 +18,7 @@
 
 * ## project2
   * Due date : 11.26
-
+  * JDBC project
 
 * ## project3
   * Due date : 12.17
